@@ -1,0 +1,90 @@
+services:
+  # Development service - with hot reload
+  dani-ui-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    container_name: dani-ui-dev
+    ports:
+      - "${UI_PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000/api/v1}
+    volumes:
+      # Mount source code for hot-reload
+      - ./src:/app/src
+      - ./public:/app/public
+      - ./app:/app/app
+      - ./components:/app/components
+      - ./lib:/app/lib
+      - ./styles:/app/styles
+      - ./next.config.ts:/app/next.config.ts
+      - ./tailwind.config.ts:/app/tailwind.config.ts
+      - ./tsconfig.json:/app/tsconfig.json
+      # Prevent node_modules from being overwritten
+      - /app/node_modules
+      - /app/.next
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512m
+        reservations:
+          cpus: '0.25'
+          memory: 256m
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    networks:
+      - dani-network
+    profiles:
+      - dev
+
+  # Production service - optimized build
+  dani-ui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000/api/v1}
+    container_name: dani-ui
+    ports:
+      - "${UI_PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000/api/v1}
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1g
+        reservations:
+          cpus: '0.5'
+          memory: 512m
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    networks:
+      - dani-network
+    profiles:
+      - prod
+
+# External network shared with backend
+networks:
+  dani-network:
+    external: true
+    name: dani-network
