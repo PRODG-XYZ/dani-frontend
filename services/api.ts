@@ -119,9 +119,12 @@ export interface ToolResultData {
     key_points?: string[];
   };
   image?: string;
+  image_url?: string;
+  s3_key?: string;  // S3 key for URL regeneration
+  infographic_id?: string;
   content?: string;
   content_type?: string;
-  sources?: Array<{ title: string; date?: string; score?: number }>;
+  sources?: Array<{ title: string; date?: string; score?: number; text_preview?: string }>;
   timing_ms?: number;
 }
 
@@ -342,6 +345,29 @@ export async function updateUserProfile(data: {
       ...authHeaders,
     },
     body: JSON.stringify(data),
+  });
+
+  await handleResponse(response);
+  return response.json();
+}
+
+/**
+ * Upload user avatar
+ */
+export async function uploadUserAvatar(file: File): Promise<{
+  id: string;
+  name: string | null;
+  email: string;
+  picture_url: string | null;
+}> {
+  const authHeaders = await getAuthHeaders();
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await fetch(`${API_URL}/users/me/avatar`, {
+    method: "POST",
+    headers: authHeaders,
+    body: formData,
   });
 
   await handleResponse(response);
@@ -1118,3 +1144,42 @@ export async function getInfographicDownloadUrl(id: string): Promise<string> {
   // Let's assume we use the direct link in an <a> tag pointing to the backend which redirects.
   return `${API_URL}/infographic/${id}/download`;
 }
+
+/**
+ * Regenerate a presigned URL for an S3 key
+ * Useful when stored URLs have expired
+ */
+export async function regenerateImageUrl(s3Key: string, expirySeconds: number = 86400): Promise<string> {
+  const authHeaders = await getAuthHeaders();
+  const response = await safeFetch(`${API_URL}/infographic/regenerate-url`, {
+    method: 'POST',
+    headers: {
+      ...authHeaders,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      s3_key: s3Key,
+      expiry_seconds: expirySeconds,
+    }),
+  });
+  await handleResponse(response);
+  const data = await response.json();
+  return data.url;
+}
+
+/**
+ * Get transcript statistics
+ */
+export async function getTranscriptStats(): Promise<{
+  total_transcripts: number;
+  total_chunks: number;
+  collection: string;
+}> {
+  const authHeaders = await getAuthHeaders();
+  const response = await safeFetch(`${API_URL}/fireflies/stats`, {
+    headers: authHeaders,
+  });
+  await handleResponse(response);
+  return response.json();
+}
+

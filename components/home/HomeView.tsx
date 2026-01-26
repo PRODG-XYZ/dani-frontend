@@ -2,10 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { 
-  VoiceIcon, 
-  DeepSearchIcon, 
-  ImageIcon, 
-  PersonaIcon,
   SendIcon,
   SparkleIcon
 } from '@/components/ui/Icons';
@@ -213,13 +209,6 @@ export default function HomeView({ onSendMessage }: HomeViewProps) {
     }
   };
 
-  const actionButtons = [
-    { icon: <DeepSearchIcon className="w-4 h-4" />, label: 'DeepSearch', id: 'deepsearch' },
-    { icon: <ImageIcon className="w-4 h-4" />, label: 'Create Image', id: 'image' },
-    { icon: <PersonaIcon className="w-4 h-4" />, label: 'Pick Personas', id: 'personas', hasDropdown: true },
-    { icon: <VoiceIcon className="w-4 h-4" />, label: 'Voice', id: 'voice' },
-  ];
-
   // Get user's first name for personalized greeting
   const firstName = user?.name ? user.name.split(' ')[0] : 'there';
 
@@ -262,7 +251,7 @@ export default function HomeView({ onSendMessage }: HomeViewProps) {
             <span className="gradient-text">DANI</span>
           </h1>
           <p className="text-lg text-[var(--foreground-secondary)] text-center max-w-md">
-            Hello {firstName}! How can I help you today?
+            Hello {firstName} ! How can I help you today?
           </p>
         </div>
 
@@ -470,34 +459,6 @@ export default function HomeView({ onSendMessage }: HomeViewProps) {
               </button>
             </div>
           </div>
-        </div>
-
-        {/* Action Buttons Row */}
-        <div className="flex flex-wrap justify-center gap-2 mb-8 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-          {actionButtons.map((btn) => (
-            <button 
-              key={btn.id}
-              className="
-                flex items-center gap-2 
-                px-4 py-2.5 
-                rounded-xl 
-                glass
-                text-[var(--foreground-secondary)] 
-                hover:text-[var(--foreground)]
-                hover:shadow-md hover:-translate-y-0.5
-                transition-all duration-200 
-                text-sm font-medium
-              "
-            >
-              {btn.icon}
-              <span>{btn.label}</span>
-              {btn.hasDropdown && (
-                <svg className="w-3 h-3 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              )}
-            </button>
-          ))}
         </div>
 
         {/* Suggestions */}

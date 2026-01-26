@@ -238,23 +238,30 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return false;
       }
 
-      const updatedUser = await response.json();
+      const updatedUserResponse = await response.json();
       
-      // Update local state and storage
-      const newUser: AuthUser = {
-        ...user!,
-        name: updatedUser.name,
-        picture_url: updatedUser.picture_url,
-      };
-      setUser(newUser);
-      localStorage.setItem(USER_KEY, JSON.stringify(newUser));
+      // Update local state and storage using functional update to avoid stale state
+      setUser(prevUser => {
+        if (!prevUser) return prevUser;
+        
+        const newUser: AuthUser = {
+          ...prevUser,
+          name: updatedUserResponse.name ?? prevUser.name,
+          picture_url: updatedUserResponse.picture_url ?? prevUser.picture_url,
+        };
+        
+        // Update localStorage synchronously
+        localStorage.setItem(USER_KEY, JSON.stringify(newUser));
+        
+        return newUser;
+      });
       
       return true;
     } catch (error) {
       console.error('Update user error:', error);
       return false;
     }
-  }, [getAccessToken, user]);
+  }, [getAccessToken]);
 
   return (
     <AuthContext.Provider 

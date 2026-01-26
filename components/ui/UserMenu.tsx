@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Avatar from '@/components/ui/Avatar';
 import { CloseIcon, ChevronDownIcon } from '@/components/ui/Icons';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeProvider';
 import UserManagementModal from './UserManagementModal';
+import { getTranscriptStats, uploadUserAvatar } from '@/services/api';
 
 // Icons for the menu
 const SettingsIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
@@ -71,10 +72,14 @@ export default function UserMenu({
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [isUserManagementOpen, setIsUserManagementOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [editForm, setEditForm] = useState({
     name: user.name,
     email: user.email || '',
   });
+  const [transcriptCount, setTranscriptCount] = useState<number | null>(null);
   const { updateUser } = useAuth();
   const { theme, setTheme } = useTheme();
   const [isAppearanceOpen, setIsAppearanceOpen] = useState(false);
@@ -95,22 +100,97 @@ export default function UserMenu({
     });
   }, [user.name, user.email]);
 
+  // Fetch transcript stats
+  useEffect(() => {
+    const fetchTranscriptStats = async () => {
+      try {
+        const stats = await getTranscriptStats();
+        setTranscriptCount(stats.total_transcripts);
+      } catch (error) {
+        console.error('Failed to fetch transcript stats:', error);
+        // Keep null to indicate loading or error state
+      }
+    };
+
+    fetchTranscriptStats();
+  }, []);
+
   const handleSaveProfile = async () => {
     setIsSaving(true);
     try {
       const success = await updateUser({ name: editForm.name });
       if (success) {
+        // The AuthContext will update the user state automatically
+        // Close the modal - parent components will re-render with updated user from context
+        setIsEditProfileOpen(false);
+        
+        // Optionally call the callback for any additional handling
         if (onEditProfile) {
           onEditProfile({ ...user, name: editForm.name });
         }
-        setIsEditProfileOpen(false);
       } else {
         console.error('Failed to update profile');
+        // Could add toast notification here
       }
     } catch (error) {
       console.error('Error updating profile:', error);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('Invalid file type. Please upload a JPEG, PNG, GIF, or WebP image.');
+      return;
+    }
+
+    // Validate file size (max 1MB for avatars)
+    if (file.size > 1 * 1024 * 1024) {
+      alert('File too large. Maximum size is 1MB for avatars.');
+      return;
+    }
+
+    // Show preview immediately
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setAvatarPreview(event.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+
+    // Upload to server
+    setIsUploadingAvatar(true);
+    try {
+      const result = await uploadUserAvatar(file);
+      
+      if (result.picture_url) {
+        // Update auth context with new picture_url - this will persist it
+        const success = await updateUser({ picture_url: result.picture_url });
+        if (success) {
+          // Keep the preview as the new avatar
+          setAvatarPreview(result.picture_url);
+          console.log('Avatar uploaded and saved successfully');
+        } else {
+          console.error('Failed to save avatar to profile');
+          setAvatarPreview(null);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to upload avatar:', error);
+      alert('Failed to upload avatar. Please try again.');
+      // Reset preview on error
+      setAvatarPreview(null);
+    } finally {
+      setIsUploadingAvatar(false);
     }
   };
 
@@ -224,6 +304,14 @@ export default function UserMenu({
                     )}
                   </div>
                 </div>
+                {/* Transcript Count */}
+                {transcriptCount !== null && (
+                  <div className="mt-2 pt-2 border-t border-[var(--border)]">
+                    <p className="text-xs text-[var(--foreground-muted)]">
+                      <span className="font-medium text-[var(--foreground)]">{transcriptCount}</span> transcripts ingested
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Menu Items */}
@@ -280,26 +368,50 @@ export default function UserMenu({
               <div className="flex justify-center">
                 <div className="relative">
                   <Avatar
-                    src={user.avatar}
+                    src={avatarPreview || user.avatar}
                     alt={user.name}
                     fallback={user.name}
                     size="xl"
                   />
-                  <button className="
-                    absolute bottom-0 right-0
-                    w-8 h-8 
-                    bg-[var(--surface)] 
-                    border border-[var(--border)]
-                    rounded-full
-                    flex items-center justify-center
-                    hover:bg-[var(--surface-hover)]
-                    transition-colors
-                    shadow-md
-                  ">
-                    <CameraIcon className="w-4 h-4 text-[var(--foreground)]" />
+                  {/* Hidden file input */}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/gif,image/webp"
+                    onChange={handleAvatarChange}
+                    className="hidden"
+                  />
+                  <button 
+                    onClick={handleAvatarClick}
+                    disabled={isUploadingAvatar}
+                    className="
+                      absolute bottom-0 right-0
+                      w-8 h-8 
+                      bg-[var(--surface)] 
+                      border border-[var(--border)]
+                      rounded-full
+                      flex items-center justify-center
+                      hover:bg-[var(--surface-hover)]
+                      transition-colors
+                      shadow-md
+                      disabled:opacity-50
+                    "
+                  >
+                    {isUploadingAvatar ? (
+                      <svg className="w-4 h-4 animate-spin text-[var(--foreground)]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    ) : (
+                      <CameraIcon className="w-4 h-4 text-[var(--foreground)]" />
+                    )}
                   </button>
                 </div>
               </div>
+              {/* Avatar upload hint */}
+              <p className="text-xs text-[var(--foreground-muted)] text-center">
+                Click the camera icon to upload a new photo (max 1MB)
+              </p>
 
               {/* Form Fields */}
               <div className="space-y-4">

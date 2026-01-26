@@ -12,10 +12,12 @@ interface AvatarProps {
 
 export default function Avatar({ src, alt, size = 'md', fallback, className = '' }: AvatarProps) {
   const [imageError, setImageError] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
-  // Reset error state when src changes
+  // Reset error and loaded state when src changes
   useEffect(() => {
     setImageError(false);
+    setImageLoaded(false);
   }, [src]);
 
   const sizeStyles = {
@@ -44,30 +46,14 @@ export default function Avatar({ src, alt, size = 'md', fallback, className = ''
       .slice(0, 2);
   };
 
-  // Show image only if src exists and hasn't errored
-  if (src && !imageError) {
-    return (
-      <div className={`relative group ${className}`}>
-        <img
-          src={src}
-          alt={alt}
-          onError={() => setImageError(true)}
-          className={`
-            ${sizeStyles[size]} 
-            rounded-full object-cover
-            ring-2 ring-transparent
-            group-hover:ring-[var(--primary)] group-hover:ring-offset-2
-            transition-all duration-300
-          `}
-        />
-        {/* Glow effect on hover */}
-        <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[var(--primary-glow)] blur-md -z-10" />
-      </div>
-    );
-  }
-  
-  // Fallback to initials
-  return (
+  // Validate src URL - skip invalid or empty URLs
+  const isValidSrc = src && src.trim() !== '' && (src.startsWith('http') || src.startsWith('data:') || src.startsWith('/'));
+
+  // Show image only if src is valid and hasn't errored
+  const showImage = isValidSrc && !imageError;
+
+  // Fallback initials component
+  const InitialsFallback = () => (
     <div className={`relative group ${className}`}>
       <div
         className={`
@@ -88,5 +74,48 @@ export default function Avatar({ src, alt, size = 'md', fallback, className = ''
       <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[var(--primary-glow)] blur-lg -z-10" />
     </div>
   );
-}
 
+  // If no valid src or error occurred, show fallback
+  if (!showImage) {
+    return <InitialsFallback />;
+  }
+
+  return (
+    <div className={`relative group ${className}`}>
+      {/* Show initials while image is loading */}
+      {!imageLoaded && (
+        <div
+          className={`
+            ${sizeStyles[size]} 
+            rounded-full 
+            bg-gradient-to-br from-[var(--primary)] to-purple-500
+            flex items-center justify-center 
+            text-white font-semibold
+            shadow-md
+            absolute inset-0
+          `}
+        >
+          {getInitials(fallback || alt)}
+        </div>
+      )}
+      <img
+        src={src}
+        alt={alt}
+        onError={() => setImageError(true)}
+        onLoad={() => setImageLoaded(true)}
+        referrerPolicy="no-referrer"
+        crossOrigin="anonymous"
+        className={`
+          ${sizeStyles[size]} 
+          rounded-full object-cover
+          ring-2 ring-transparent
+          group-hover:ring-[var(--primary)] group-hover:ring-offset-2
+          transition-all duration-300
+          ${imageLoaded ? 'opacity-100' : 'opacity-0'}
+        `}
+      />
+      {/* Glow effect on hover */}
+      <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[var(--primary-glow)] blur-md -z-10" />
+    </div>
+  );
+}

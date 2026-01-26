@@ -220,11 +220,11 @@ function SourceDetailModal({ source, onClose }: { source: Source; onClose: () =>
                 <div className="flex-1 h-2 bg-[var(--border)] rounded-full overflow-hidden">
                   <div 
                     className="h-full bg-gradient-to-r from-[var(--primary)] to-purple-500 rounded-full transition-all duration-500"
-                    style={{ width: `${Math.round(source.relevance_score * 100)}%` }}
+                    style={{ width: `${Math.min(Math.round(source.relevance_score), 100)}%` }}
                   />
                 </div>
                 <span className="text-sm font-medium text-[var(--primary)]">
-                  {Math.round(source.relevance_score * 100)}%
+                  {Math.round(source.relevance_score)}%
                 </span>
               </div>
             </div>
@@ -233,7 +233,7 @@ function SourceDetailModal({ source, onClose }: { source: Source; onClose: () =>
           {/* Text Preview */}
           <div className="space-y-2">
             <h4 className="text-sm font-medium text-[var(--foreground-muted)]">Content</h4>
-            <div className="p-4 rounded-xl bg-[var(--background)] border border-[var(--border)]">
+            <div className="p-4 rounded-xl bg-[var(--background)] border border-[var(--border)] max-h-96 overflow-y-auto">
               <p className="text-sm text-[var(--foreground)] whitespace-pre-wrap leading-relaxed">
                 {source.text_preview || source.text || 'No content available'}
               </p>
@@ -319,11 +319,11 @@ const SourcesList = memo(function SourcesList({ sources, onSelectSource }: { sou
                 <div className="flex-1 h-1.5 bg-[var(--border)] rounded-full overflow-hidden">
                   <div 
                     className="h-full bg-gradient-to-r from-[var(--primary)] to-purple-500 rounded-full"
-                    style={{ width: `${Math.round(source.relevance_score * 100)}%` }}
+                    style={{ width: `${Math.min(Math.round(source.relevance_score), 100)}%` }}
                   />
                 </div>
                 <span className="text-xs font-medium text-[var(--primary)]">
-                  {Math.round(source.relevance_score * 100)}%
+                  {Math.round(source.relevance_score)}%
                 </span>
               </div>
             </div>

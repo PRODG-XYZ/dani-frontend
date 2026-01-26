@@ -39,7 +39,7 @@ import { useAuth } from "@/contexts/AuthContext";
 export default function ChatPage() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [currentConversationId, setCurrentConversationId] =
-    useState<string>("new");
+    useState<string | null>(null); // Start as null, will be set from URL or 'new'
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [streamingContent, setStreamingContent] = useState<string>("");
@@ -62,6 +62,7 @@ export default function ChatPage() {
     error?: string;
   }>({ isActive: false });
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const loadingConversationRef = useRef<string | null>(null); // Track which conversation is being loaded
   const router = useRouter();
   const searchParams = useSearchParams();
   const { signOut, isAuthenticated, isLoading: isAuthLoading } = useAuth();
@@ -137,18 +138,30 @@ export default function ChatPage() {
   };
 
   // Handle URL-based conversation selection (for navigation from other pages like Ghostwriter)
+  // Also restore conversation on page refresh
   useEffect(() => {
     const conversationParam = searchParams.get('conversation');
     if (conversationParam && conversationParam !== 'new') {
       setPendingConversationId(conversationParam);
+    } else if (!conversationParam) {
+      // No URL param - default to 'new' (only on initial load)
+      setCurrentConversationId('new');
     }
-  }, [searchParams]);
+  }, [searchParams]); // Removed currentConversationId to prevent loop
 
   // Select pending conversation once conversations are loaded
   useEffect(() => {
     if (pendingConversationId && conversations.length > 0 && !isLoadingHistory) {
+      // Prevent duplicate loads
+      if (loadingConversationRef.current === pendingConversationId) {
+        return;
+      }
+      
       const convExists = conversations.some(c => c.id === pendingConversationId);
       if (convExists) {
+        // Mark as loading to prevent duplicate calls
+        loadingConversationRef.current = pendingConversationId;
+        
         // We need to call the selection logic - but handleSelectConversation is defined after
         // So we just set the ID and let the existing flow handle it
         setCurrentConversationId(pendingConversationId);
@@ -173,12 +186,15 @@ export default function ChatPage() {
           setConversations(prev => prev.map(c => 
             c.id === pendingConversationId ? { ...c, messages } : c
           ));
+          // Clear loading ref after successful load
+          loadingConversationRef.current = null;
         }).catch(err => {
           console.error('[Chat] Failed to load conversation messages:', err);
+          loadingConversationRef.current = null;
         });
         setPendingConversationId(null);
-        // Clear the URL param
-        router.replace('/chat', { scroll: false });
+        // Update URL to preserve conversation on refresh (don't clear it!)
+        router.replace(`/chat?conversation=${pendingConversationId}`, { scroll: false });
       }
     }
   }, [pendingConversationId, conversations, isLoadingHistory, router]);
@@ -191,8 +207,20 @@ export default function ChatPage() {
       if (conversationId === "new") {
         console.log("[Chat] Starting new conversation");
         setCurrentConversationId("new");
+        loadingConversationRef.current = null;
+        // Update URL to reflect new conversation
+        router.replace('/chat', { scroll: false });
         return;
       }
+
+      // Prevent duplicate loads for the same conversation
+      if (loadingConversationRef.current === conversationId) {
+        console.log("[Chat] Already loading conversation:", conversationId);
+        return;
+      }
+
+      // Update URL to persist conversation selection on refresh
+      router.replace(`/chat?conversation=${conversationId}`, { scroll: false });
 
       // Check if messages are already loaded
       const existingConv = conversations.find((c) => c.id === conversationId);
@@ -206,6 +234,7 @@ export default function ChatPage() {
       if (existingConv && existingConv.messages.length > 0) {
         console.log("[Chat] Messages already loaded, using cached");
         setCurrentConversationId(conversationId);
+        loadingConversationRef.current = null;
         // Show sources from last assistant message if available
         const lastAssistantMsg = [...existingConv.messages]
           .reverse()
@@ -226,6 +255,9 @@ export default function ChatPage() {
         }
         return;
       }
+
+      // Mark as loading to prevent duplicate calls
+      loadingConversationRef.current = conversationId;
 
       // Load messages from backend
       console.log("[Chat] Loading messages from backend for:", conversationId);
@@ -253,30 +285,43 @@ export default function ChatPage() {
             conv.id === conversationId
               ? {
                   ...conv,
-                  messages: fullConversation.messages.map((msg) => ({
-                    id: msg.id,
-                    content: msg.content,
-                    role: msg.role as "user" | "assistant",
-                    timestamp: new Date(msg.created_at),
-                    // Map tool result data from metadata if present (critical for persistence)
-                    toolResult: (msg.metadata?.tool_result as any),
-                    toolName: (msg.metadata?.tool_name as any),
-                    attachments: (msg.metadata?.attachments as any),
-                    // Map paired history for version navigation
-                    pairedHistory: (msg.metadata?.paired_history as any),
-                    sources: msg.sources?.map((s) => {
-                      // Debug log for sources if needed
-                      // console.log('[Chat] Mapping source:', s);
-                      return {
-                        title: s.title ?? undefined,
-                        date: s.date ?? undefined,
-                        transcript_id: s.transcript_id ?? undefined,
-                        speakers: s.speakers || [],
-                        text_preview: s.text_preview ?? undefined,
-                        relevance_score: s.relevance_score ?? undefined,
-                      };
-                    }),
-                  })),
+                  messages: fullConversation.messages.map((msg) => {
+                    // Debug: Log tool result when loading from history
+                    if (msg.metadata?.tool_result) {
+                      console.log('[Chat] Loading message with tool_result:', {
+                        msgId: msg.id,
+                        toolName: msg.metadata?.tool_name,
+                        hasImage: !!(msg.metadata?.tool_result as any)?.image,
+                        hasImageUrl: !!(msg.metadata?.tool_result as any)?.image_url,
+                        hasS3Key: !!(msg.metadata?.tool_result as any)?.s3_key,
+                        s3Key: (msg.metadata?.tool_result as any)?.s3_key,
+                      });
+                    }
+                    return {
+                      id: msg.id,
+                      content: msg.content,
+                      role: msg.role as "user" | "assistant",
+                      timestamp: new Date(msg.created_at),
+                      // Map tool result data from metadata if present (critical for persistence)
+                      toolResult: (msg.metadata?.tool_result as any),
+                      toolName: (msg.metadata?.tool_name as any),
+                      attachments: (msg.metadata?.attachments as any),
+                      // Map paired history for version navigation
+                      pairedHistory: (msg.metadata?.paired_history as any),
+                      sources: msg.sources?.map((s) => {
+                        // Debug log for sources if needed
+                        // console.log('[Chat] Mapping source:', s);
+                        return {
+                          title: s.title ?? undefined,
+                          date: s.date ?? undefined,
+                          transcript_id: s.transcript_id ?? undefined,
+                          speakers: s.speakers || [],
+                          text_preview: s.text_preview ?? undefined,
+                          relevance_score: s.relevance_score ?? undefined,
+                        };
+                      }),
+                    };
+                  }),
                   // Load active attachments from metadata
                   activeAttachments: (fullConversation.metadata as any)?.active_attachments,
                 }
@@ -319,13 +364,14 @@ export default function ChatPage() {
         }
       } finally {
         setIsLoading(false);
+        loadingConversationRef.current = null; // Clear loading ref
       }
     },
     [conversations, signOut, router]
   );
 
   const currentConversation =
-    currentConversationId === "new"
+    currentConversationId === "new" || currentConversationId === null
       ? ({
           id: "new",
           title: "New Conversation",
@@ -382,7 +428,7 @@ export default function ChatPage() {
 
     // Track if this is a new conversation - only 'new' counts as new
     // If we have a currentConversationId that's not 'new', we should reuse it
-    const isNewConversation = currentConversationId === "new";
+    const isNewConversation = currentConversationId === "new" || currentConversationId === null;
     let activeConversationId: string | undefined;
 
     console.log("[Chat] handleSendMessage:", {
@@ -526,7 +572,7 @@ export default function ChatPage() {
           console.log("[Chat] Tool result:", chunk.data);
           
           // Check for sources in tool data and update state
-          // Note: Backend tool sources have format { title, date, score } which maps loosely to Source
+          // Backend sends: { title, date, score (raw), relevance_score (0-100), text_preview, ... }
           if (chunk.data && chunk.data.sources && Array.isArray(chunk.data.sources) && chunk.data.sources.length > 0) {
              console.log("[Chat] Received sources from tool:", chunk.data.sources.length);
              const toolSources = chunk.data.sources.map((s: any) => ({
@@ -534,8 +580,13 @@ export default function ChatPage() {
                 date: s.date,
                 transcript_id: null,
                 speakers: [],
-                text_preview: "Source used for infographic generation",
-                relevance_score: s.score || null
+                text_preview: s.text_preview || s.text || "Source used for infographic generation",
+                text: s.text || s.text_preview,
+                // Use relevance_score (already normalized 0-100) from backend, not raw score
+                relevance_score: s.relevance_score ?? null,
+                relevance_label: s.relevance_label,
+                meeting_category: s.meeting_category,
+                category_confidence: s.category_confidence,
              }));
              setSources(toolSources);
              currentSources = toolSources;
@@ -693,6 +744,11 @@ export default function ChatPage() {
     setSelectedMessageId(null);
     setToolState({ isActive: false });
 
+    if (!currentConversationId) {
+      console.error("[Chat] Cannot edit message: no conversation selected");
+      return;
+    }
+
     try {
       const response = await editMessage(currentConversationId, messageId, newContent, true);
       
@@ -729,14 +785,20 @@ export default function ChatPage() {
              setToolState(prev => ({ ...prev, status: 'processing', message: chunk.message }));
          } else if (chunk.type === "tool_result") {
              // Handle tool sources if present
+             // Backend sends: { title, date, score (raw), relevance_score (0-100), text_preview, ... }
              if (chunk.data && chunk.data.sources && Array.isArray(chunk.data.sources) && chunk.data.sources.length > 0) {
                  const toolSources = chunk.data.sources.map((s: any) => ({
                     title: s.title,
                     date: s.date,
                     transcript_id: null,
                     speakers: [],
-                    text_preview: "Source used for creation",
-                    relevance_score: s.score || null
+                    text_preview: s.text_preview || s.text || "Source used for creation",
+                    text: s.text || s.text_preview,
+                    // Use relevance_score (already normalized 0-100) from backend
+                    relevance_score: s.relevance_score ?? null,
+                    relevance_label: s.relevance_label,
+                    meeting_category: s.meeting_category,
+                    category_confidence: s.category_confidence,
                  }));
                  setSources(toolSources);
                  currentSources = toolSources;
@@ -893,7 +955,7 @@ export default function ChatPage() {
     <ProtectedRoute>
       <ChatLayout
         conversations={conversations}
-        currentConversationId={currentConversationId}
+        currentConversationId={currentConversationId || "new"}
         onSelectConversation={handleSelectConversation}
         onNewConversation={handleNewConversation}
         onDeleteConversation={handleDeleteConversation}

@@ -196,7 +196,7 @@ export default function InfographicGenerator() {
               <div className="glass p-2 rounded-3xl overflow-hidden shadow-2xl ring-1 ring-white/10">
                 {result.image ? (
                    <img 
-                     src={`data:image/png;base64,${result.image}`} 
+                     src={result.image.startsWith('data:') ? result.image : `data:image/png;base64,${result.image}`} 
                      alt={result.structured_data.headline}
                      className="w-full h-auto rounded-2xl"
                    />
@@ -205,6 +205,15 @@ export default function InfographicGenerator() {
                     src={result.image_url} 
                     alt={result.structured_data.headline}
                     className="w-full h-auto rounded-2xl"
+                    onError={(e) => {
+                      // If URL fails, show error state
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      const parent = target.parentElement;
+                      if (parent) {
+                        parent.innerHTML = '<div class="aspect-square flex flex-col items-center justify-center bg-[var(--surface-subtle)] rounded-2xl text-[var(--foreground-muted)] p-8 text-center"><p class="font-medium">Image URL expired</p></div>';
+                      }
+                    }}
                   />
                 ) : (
                   <div className="aspect-square flex flex-col items-center justify-center bg-[var(--surface-subtle)] rounded-2xl text-[var(--foreground-muted)] p-8 text-center">

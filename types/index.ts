@@ -156,12 +156,15 @@ export interface ToolResultEvent {
       stats?: Array<{ value: string; label: string; icon?: string }>;
       key_points?: string[];
     };
-    image?: string;  // Base64 or URL
+    image?: string;  // Base64 encoded image data
+    image_url?: string;  // Presigned S3 URL for persistent storage
+    s3_key?: string;  // S3 key for URL regeneration when presigned URL expires
+    infographic_id?: string;  // Database ID for the infographic
     // Content writer result
     content?: string;
     content_type?: string;
     // Common
-    sources?: Array<{ title: string; date?: string; score?: number }>;
+    sources?: Array<{ title: string; date?: string; score?: number; text_preview?: string; relevance_score?: number }>;
     timing_ms?: number;
   };
 }

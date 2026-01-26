@@ -189,6 +189,19 @@ export default function ChatMessage({ message, isLoading, isSelected, onRegenera
   const hasDisclaimer = !isUser && message.disclaimer;
   const hasToolResult = !isUser && message.toolResult && message.toolName;
 
+  // Debug logging for tool results
+  if (message.toolResult || message.toolName) {
+    console.log('[ChatMessage] Tool result check:', {
+      messageId: message.id,
+      isUser,
+      hasToolResult,
+      toolName: message.toolName,
+      toolResultKeys: message.toolResult ? Object.keys(message.toolResult) : null,
+      s3Key: (message.toolResult as any)?.s3_key,
+      imageUrl: (message.toolResult as any)?.image_url,
+    });
+  }
+
   const handleClick = () => {
     if (hasSources && onSelectMessage) {
       console.log('[ChatMessage] Message clicked, sources:', message.sources?.length);
