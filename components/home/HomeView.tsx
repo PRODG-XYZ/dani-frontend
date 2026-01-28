@@ -41,13 +41,7 @@ function getFileType(filename: string): 'pdf' | 'docx' | 'txt' {
   }
 }
 
-// Default suggestions to use as fallback
-const DEFAULT_SUGGESTIONS = [
-  "What's the latest news today?",
-  "Help me write an email",
-  "Explain quantum computing",
-  "Create a workout plan",
-];
+
 
 export default function HomeView({ onSendMessage }: HomeViewProps) {
   const { user } = useAuth();
@@ -60,7 +54,6 @@ export default function HomeView({ onSendMessage }: HomeViewProps) {
     fileType: 'pdf' | 'docx' | 'txt';
   } | null>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [suggestions, setSuggestions] = useState<string[]>(DEFAULT_SUGGESTIONS);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -489,28 +482,7 @@ export default function HomeView({ onSendMessage }: HomeViewProps) {
           </div>
         </div>
 
-        {/* Suggestions */}
-        <div className="w-full max-w-2xl animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-          <p className="text-sm text-[var(--foreground-muted)] text-center mb-3">Try asking:</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {suggestions.map((suggestion, index) => (
-              <button
-                key={index}
-                onClick={() => setInputValue(suggestion)}
-                className="
-                  p-3 rounded-xl
-                  glass
-                  text-left text-sm text-[var(--foreground-secondary)]
-                  hover:text-[var(--foreground)]
-                  hover:shadow-md hover:-translate-y-0.5
-                  transition-all duration-200
-                "
-              >
-                &ldquo;{suggestion}&rdquo;
-              </button>
-            ))}
-          </div>
-        </div>
+
       </div>
     </>
   );
