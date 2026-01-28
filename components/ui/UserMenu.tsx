@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import Avatar from '@/components/ui/Avatar';
 import { CloseIcon, ChevronDownIcon } from '@/components/ui/Icons';
 import { useAuth } from '@/contexts/AuthContext';
@@ -44,6 +45,12 @@ const CameraIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
 const UsersIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
   <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+  </svg>
+);
+
+const UploadDocIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
   </svg>
 );
 
@@ -198,7 +205,17 @@ export default function UserMenu({
     }
   };
 
+  const router = useRouter();
+
   const menuItems = [
+    {
+      icon: <UploadDocIcon className="w-5 h-5" />,
+      label: 'Upload documents',
+      onClick: () => {
+        setIsMenuOpen(false);
+        router.push('/documents');
+      },
+    },
     {
       icon: <UsersIcon className="w-5 h-5" />,
       label: 'Manage users',

@@ -875,13 +875,14 @@ export interface DocumentDownloadUrlResponse {
 
 export async function getDocumentDownloadUrl(
   documentId: string,
-  expiresIn: number = 3600
+  expiresIn: number = 3600,
+  inline: boolean = true // Default to inline for preview
 ): Promise<DocumentDownloadUrlResponse> {
-  console.log("[API] getDocumentDownloadUrl:", { documentId, expiresIn });
+  console.log("[API] getDocumentDownloadUrl:", { documentId, expiresIn, inline });
   const authHeaders = await getAuthHeaders();
 
   const response = await fetch(
-    `${API_URL}/documents/${documentId}/download-url?expires_in=${expiresIn}`,
+    `${API_URL}/documents/${documentId}/download-url?expires_in=${expiresIn}&inline=${inline}`,
     {
       headers: authHeaders,
     }

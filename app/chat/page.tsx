@@ -234,6 +234,8 @@ export default function ChatPage() {
         // Map tool result data from metadata
         toolResult: (m.metadata?.tool_result as any),
         toolName: (m.metadata?.tool_name as any),
+        // Map attachments from metadata for document display
+        attachments: (m.metadata?.attachments as any),
         // Map paired history for version navigation
         pairedHistory: (m.metadata?.paired_history as any),
         sources: (m.sources || []).map((s) => ({

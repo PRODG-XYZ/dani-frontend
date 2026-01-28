@@ -36,14 +36,9 @@ export default function Avatar({ src, alt, size = 'md', fallback, className = ''
       return name[0].toUpperCase();
     }
     
-    return name
-      .trim()
-      .split(' ')
-      .filter(word => word.length > 0)
-      .map(word => word[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
+    // Return only the first letter of the first word (first name)
+    const firstName = name.trim().split(' ').filter(word => word.length > 0)[0];
+    return firstName ? firstName[0].toUpperCase() : '?';
   };
 
   // Validate src URL - skip invalid or empty URLs
