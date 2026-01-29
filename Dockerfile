@@ -44,9 +44,15 @@ WORKDIR /app
 # Copy source code
 COPY . .
 
+# Build arguments for NEXT_PUBLIC_* vars (embedded at build time)
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_GOOGLE_CLIENT_ID
+
+# Set as environment variables for the build
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_GOOGLE_CLIENT_ID=$NEXT_PUBLIC_GOOGLE_CLIENT_ID
+
 # Build the application
-# Note: NEXT_PUBLIC_* vars need to be available at build time
-# We'll handle this via docker-compose args or .env file
 RUN npm run build
 
 # ============================================================================
