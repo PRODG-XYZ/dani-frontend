@@ -1,23 +1,47 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Message } from '@/types';
-import Avatar from '@/components/ui/Avatar';
-import { CopyIcon, RefreshIcon, ThumbsUpIcon, ThumbsDownIcon } from '@/components/ui/Icons';
+import { CopyIcon, ThumbsUpIcon, ThumbsDownIcon } from '@/components/ui/Icons';
 
-// Lightning bolt icon for AI messages
-const LightningIcon = ({ className }: { className?: string }) => (
-  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-  </svg>
-);
+// Static Pulsating Sphere for AI (no animation)
+const StaticSphere = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
-// Paper airplane icon
-const PaperPlaneIcon = ({ className }: { className?: string }) => (
-  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-  </svg>
-);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const radius = 10;
+
+    const gradient = ctx.createRadialGradient(
+      centerX,
+      centerY,
+      0,
+      centerX,
+      centerY,
+      radius
+    );
+
+    gradient.addColorStop(0, 'rgba(255, 140, 0, 1)');
+    gradient.addColorStop(0.3, 'rgba(255, 100, 80, 0.9)');
+    gradient.addColorStop(0.5, 'rgba(255, 120, 150, 0.6)');
+    gradient.addColorStop(0.7, 'rgba(255, 180, 200, 0.3)');
+    gradient.addColorStop(1, 'rgba(255, 200, 200, 0)');
+
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    ctx.fill();
+  }, []);
+
+  return <canvas ref={canvasRef} width={24} height={24} className="rounded-full" />;
+};
 
 interface ChatMessageProps {
   message: Message;
@@ -26,13 +50,14 @@ interface ChatMessageProps {
   onRegenerate?: () => void;
   onSelectMessage?: (messageId: string) => void;
   onEdit?: (messageId: string, newContent: string) => void;
+  userPictureUrl?: string | null;
 }
 
-export default function ChatMessage({ message, isLoading, isSelected, onRegenerate, onSelectMessage, onEdit }: ChatMessageProps) {
+export default function ChatMessage({ message, isLoading, isSelected, onSelectMessage, onEdit, userPictureUrl }: ChatMessageProps) {
   const isUser = message.role === 'user';
   const [copied, setCopied] = useState(false);
   const [feedback, setFeedback] = useState<'up' | 'down' | null>(null);
-  
+
   const handleCopy = async () => {
     await navigator.clipboard.writeText(message.content);
     setCopied(true);
@@ -50,10 +75,22 @@ export default function ChatMessage({ message, isLoading, isSelected, onRegenera
           {/* Avatar/Icon */}
           <div className="flex-shrink-0 mt-1">
             {isUser ? (
-              <Avatar alt="User" fallback="You" size="sm" />
+              userPictureUrl ? (
+                <img 
+                  src={userPictureUrl} 
+                  alt="User" 
+                  className="w-6 h-6 rounded-full object-cover border border-gray-200"
+                />
+              ) : (
+                <div className="w-6 h-6 rounded-full bg-gray-200 border border-gray-200 flex items-center justify-center">
+                  <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+              )
             ) : (
-              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#FF8C00] to-[#FF6B35] flex items-center justify-center">
-                <LightningIcon className="w-3.5 h-3.5 text-white" />
+              <div className="w-6 h-6 rounded-full flex items-center justify-center overflow-hidden">
+                <StaticSphere />
               </div>
             )}
           </div>
@@ -61,9 +98,9 @@ export default function ChatMessage({ message, isLoading, isSelected, onRegenera
           {/* Message Bubble */}
           <div className="flex-1 min-w-0">
             <div
-              className={`
+                      className={`
                 rounded-2xl px-4 py-3
-                ${isUser 
+                        ${isUser 
                   ? 'bg-white border border-gray-200' 
                   : 'bg-gradient-to-br from-orange-50 to-orange-100/50 border border-orange-200/50'
                 }
@@ -85,37 +122,37 @@ export default function ChatMessage({ message, isLoading, isSelected, onRegenera
               )}
             </div>
 
-            {/* Action Buttons - Only for assistant messages */}
-            {!isUser && !isLoading && (
+        {/* Action Buttons - Only for assistant messages */}
+        {!isUser && !isLoading && (
               <div className="flex items-center gap-2 mt-2 px-1">
                 {/* Thumbs Up/Down */}
-                <button
-                  onClick={() => handleFeedback('up')}
-                  className={`
+            <button
+              onClick={() => handleFeedback('up')}
+              className={`
                     p-1.5 rounded-lg transition-colors
-                    ${feedback === 'up'
+                ${feedback === 'up'
                       ? 'text-[#FF8C00] bg-orange-100'
                       : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
-                    }
-                  `}
-                  title="Good response"
-                >
-                  <ThumbsUpIcon className="w-4 h-4" />
-                </button>
-                
-                <button
-                  onClick={() => handleFeedback('down')}
-                  className={`
+                }
+              `}
+              title="Good response"
+            >
+              <ThumbsUpIcon className="w-4 h-4" />
+            </button>
+            
+            <button
+              onClick={() => handleFeedback('down')}
+              className={`
                     p-1.5 rounded-lg transition-colors
-                    ${feedback === 'down'
+                ${feedback === 'down'
                       ? 'text-red-500 bg-red-50'
                       : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
-                    }
-                  `}
-                  title="Bad response"
-                >
-                  <ThumbsDownIcon className="w-4 h-4" />
-                </button>
+                }
+              `}
+              title="Bad response"
+            >
+              <ThumbsDownIcon className="w-4 h-4" />
+            </button>
 
                 {/* Copy Button */}
                 <button
@@ -125,15 +162,6 @@ export default function ChatMessage({ message, isLoading, isSelected, onRegenera
                 >
                   <CopyIcon className="w-3.5 h-3.5" />
                   {copied ? 'Copied!' : 'Copy'}
-                </button>
-
-                {/* Add to Editor Button */}
-                <button
-                  className="px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1.5"
-                  title="Add to Editor"
-                >
-                  <PaperPlaneIcon className="w-3.5 h-3.5" />
-                  Add to Editor
                 </button>
               </div>
             )}

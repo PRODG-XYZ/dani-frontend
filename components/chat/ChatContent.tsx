@@ -1139,6 +1139,7 @@ export default function ChatContent() {
                     isSelected={selectedMessageId === message.id}
                     onSelectMessage={handleSelectMessage}
                     onEdit={handleEditMessage}
+                    userPictureUrl={user?.picture_url}
                   />
                 ))}
                 {(isLoading || streamingContent) && !toolState.isActive && (
@@ -1150,6 +1151,7 @@ export default function ChatContent() {
                       timestamp: new Date(),
                     }}
                     isLoading={isLoading && !streamingContent}
+                    userPictureUrl={user?.picture_url}
                   />
                 )}
                 {toolState.isActive && toolState.toolName && (
@@ -1173,30 +1175,6 @@ export default function ChatContent() {
                     )}
                   </div>
                 )}
-                
-                {/* Regenerate Response Button - Only show if there are messages and last message is from assistant */}
-                {currentConversation.messages.length > 0 && 
-                 !isLoading && 
-                 !streamingContent &&
-                 currentConversation.messages[currentConversation.messages.length - 1]?.role === 'assistant' && (
-                  <div className="flex justify-center mt-4">
-                    <button
-                      onClick={() => {
-                        const lastAssistantMsg = currentConversation.messages[currentConversation.messages.length - 1];
-                        if (lastAssistantMsg) {
-                          handleRegenerateResponse(lastAssistantMsg.id);
-                        }
-                      }}
-                      className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium"
-                    >
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                      </svg>
-                      Regenerate Response
-                    </button>
-                  </div>
-                )}
-                
                 <div ref={messagesEndRef} />
               </div>
             )}
