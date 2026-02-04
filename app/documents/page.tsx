@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
-import ChatLayout from '@/components/layouts/ChatLayout';
+import BeeBotLayout from '@/components/layouts/BeeBotLayout';
 import FilePreviewModal from '@/components/chat/FilePreviewModal';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -109,7 +109,7 @@ const MAX_CONCURRENT_UPLOADS = 3;
 
 function DocumentsPageContent() {
   const router = useRouter();
-  const { signOut: logout } = useAuth();
+  const { signOut: logout, user } = useAuth();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [documents, setDocuments] = useState<DocumentResponse[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -271,11 +271,6 @@ function DocumentsPageContent() {
     router.push('/chat');
   };
 
-  const handleLogout = () => {
-    logout();
-    router.push('/');
-  };
-
   const completedUploads = uploadingFiles.filter(f => f.status === 'completed').length;
   const totalUploads = uploadingFiles.length;
 
@@ -284,22 +279,21 @@ function DocumentsPageContent() {
   );
 
   return (
-    <ChatLayout
+    <BeeBotLayout
       conversations={conversations}
       currentConversationId=""
       onSelectConversation={handleSelectConversation}
       onNewConversation={handleNewConversation}
-      onLogout={handleLogout}
-      title="Documents"
-      showHeader={true}
+      user={user}
+      sources={[]}
     >
       {/* Scrollable Content */}
       <div className="h-full overflow-y-auto">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Page Header */}
           <div className="mb-8">
-            <h1 className="text-2xl font-bold text-[var(--foreground)]">Documents</h1>
-            <p className="text-sm text-[var(--foreground-muted)] mt-1">Upload and manage documents for the RAG knowledge base</p>
+            <h1 className="text-2xl font-bold text-gray-900">Documents</h1>
+            <p className="text-sm text-gray-600 mt-1">Upload and manage documents for the RAG knowledge base</p>
           </div>
 
           {/* Upload Area */}
@@ -312,8 +306,8 @@ function DocumentsPageContent() {
               relative border-2 border-dashed rounded-2xl p-8 mb-8 cursor-pointer
               transition-all duration-300
               ${isDragging 
-                ? 'border-[var(--primary)] bg-[var(--primary)]/10' 
-                : 'border-[var(--border)] hover:border-[var(--primary)]/50 hover:bg-[var(--surface)]'
+                ? 'border-[#FF8C00] bg-orange-50' 
+                : 'border-gray-200 hover:border-[#FF8C00]/50 hover:bg-gray-50'
               }
             `}
           >
@@ -328,15 +322,15 @@ function DocumentsPageContent() {
             <div className="text-center">
               <div className={`
                 w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center
-                ${isDragging ? 'bg-[var(--primary)]/20' : 'bg-[var(--surface)]'}
+                ${isDragging ? 'bg-orange-100' : 'bg-gray-50'}
                 transition-colors
               `}>
-                <UploadIcon className={`w-8 h-8 ${isDragging ? 'text-[var(--primary)]' : 'text-[var(--foreground-muted)]'}`} />
+                <UploadIcon className={`w-8 h-8 ${isDragging ? 'text-[#FF8C00]' : 'text-gray-400'}`} />
               </div>
-              <h3 className="text-lg font-medium text-[var(--foreground)] mb-2">
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
                 Drop files here or click to upload
               </h3>
-              <p className="text-sm text-[var(--foreground-muted)]">
+              <p className="text-sm text-gray-600">
                 PDF, DOCX, TXT files up to 50MB • Multiple files supported
               </p>
             </div>
@@ -346,13 +340,13 @@ function DocumentsPageContent() {
           {uploadingFiles.length > 0 && (
             <div className="mb-8">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-medium text-[var(--foreground)]">
+                <h2 className="text-lg font-medium text-gray-900">
                   Uploading {completedUploads}/{totalUploads} files
                 </h2>
                 {completedUploads === totalUploads && totalUploads > 0 && (
                   <button
                     onClick={() => setUploadingFiles([])}
-                    className="text-sm text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
+                    className="text-sm text-gray-600 hover:text-gray-900"
                   >
                     Clear all
                   </button>
@@ -362,28 +356,28 @@ function DocumentsPageContent() {
                 {uploadingFiles.map(upload => (
                   <div
                     key={upload.id}
-                    className="flex items-center gap-4 p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)]"
+                    className="flex items-center gap-4 p-4 rounded-xl bg-white border border-gray-200"
                   >
                     <div className="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center flex-shrink-0">
                       <DocumentIcon className="w-5 h-5 text-red-400" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-[var(--foreground)] truncate">
+                      <p className="text-sm font-medium text-gray-900 truncate">
                         {upload.file.name}
                       </p>
                       <div className="flex items-center gap-2 mt-1">
                         {upload.status === 'queued' && (
-                          <span className="text-xs text-[var(--foreground-muted)]">Queued...</span>
+                          <span className="text-xs text-gray-600">Queued...</span>
                         )}
                         {upload.status === 'uploading' && (
                           <>
                             <div className="flex-1 h-1.5 bg-[var(--border)] rounded-full overflow-hidden max-w-[200px]">
                               <div 
-                                className="h-full bg-[var(--primary)] transition-all duration-300"
+                                className="h-full bg-[#FF8C00] transition-all duration-300"
                                 style={{ width: `${upload.progress}%` }}
                               />
                             </div>
-                            <span className="text-xs text-[var(--foreground-muted)]">{upload.progress}%</span>
+                            <span className="text-xs text-gray-600">{upload.progress}%</span>
                           </>
                         )}
                         {upload.status === 'processing' && (
@@ -399,7 +393,7 @@ function DocumentsPageContent() {
                     </div>
                     <button
                       onClick={(e) => { e.stopPropagation(); removeUpload(upload.id); }}
-                      className="p-1.5 rounded-lg hover:bg-[var(--surface-hover)] text-[var(--foreground-muted)]"
+                      className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -412,48 +406,49 @@ function DocumentsPageContent() {
           )}
 
           {/* Documents Table */}
-          <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] overflow-hidden">
-            <div className="px-6 py-4 border-b border-[var(--border)] flex items-center justify-between gap-4">
-              <h2 className="text-lg font-medium text-[var(--foreground)] whitespace-nowrap">
+          <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between gap-4">
+              <h2 className="text-lg font-medium text-gray-900 whitespace-nowrap">
                 Your Documents ({filteredDocuments.length}{searchTerm && documents.length !== filteredDocuments.length ? ` / ${documents.length}` : ''})
               </h2>
               <div className="flex items-center gap-3">
                 <div className="relative">
-                  <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--foreground-muted)]" />
+                  <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
                   <input
                     type="text"
                     placeholder="Search documents..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-9 pr-4 py-2 text-sm bg-[var(--background)] border border-[var(--border)] rounded-xl text-[var(--foreground)] placeholder-[var(--foreground-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] w-48 sm:w-64 transition-all"
+                    className="pl-9 pr-4 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-0 focus:border-gray-300 w-48 sm:w-64 transition-all"
+                    style={{ outline: 'none', boxShadow: 'none' }}
                   />
                 </div>
                 <button
                   onClick={fetchDocuments}
                   disabled={isLoading}
-                  className="p-2 rounded-lg hover:bg-[var(--surface-hover)] transition-colors border border-[var(--border)] bg-[var(--background)]"
+                  className="p-2 rounded-lg hover:bg-gray-100 transition-colors border border-gray-200 bg-white"
                   title="Refresh"
                 >
-                  <RefreshIcon className={`w-5 h-5 text-[var(--foreground-muted)] ${isLoading ? 'animate-spin' : ''}`} />
+                  <RefreshIcon className={`w-5 h-5 text-gray-600 ${isLoading ? 'animate-spin' : ''}`} />
                 </button>
               </div>
             </div>
             
             {isLoading && documents.length === 0 ? (
               <div className="p-12 text-center">
-                <div className="w-8 h-8 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-                <p className="text-[var(--foreground-muted)]">Loading documents...</p>
+                <div className="w-8 h-8 border-2 border-[#FF8C00] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                <p className="text-gray-600">Loading documents...</p>
               </div>
             ) : documents.length === 0 ? (
               <div className="p-12 text-center">
-                <DocumentIcon className="w-12 h-12 mx-auto mb-4 text-[var(--foreground-muted)]" />
-                <p className="text-[var(--foreground-muted)]">No documents yet. Upload some files to get started.</p>
+                <DocumentIcon className="w-12 h-12 mx-auto mb-4 text-gray-600" />
+                <p className="text-gray-600">No documents yet. Upload some files to get started.</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="text-left text-sm text-[var(--foreground-muted)] border-b border-[var(--border)]">
+                    <tr className="text-left text-sm text-gray-600 border-b border-gray-200">
                       <th className="px-6 py-3 font-medium">Name</th>
                       <th className="px-6 py-3 font-medium">Status</th>
                       <th className="px-6 py-3 font-medium">Size</th>
@@ -463,17 +458,17 @@ function DocumentsPageContent() {
                   </thead>
                   <tbody className="divide-y divide-[var(--border)]">
                     {filteredDocuments.map(doc => (
-                      <tr key={doc.id} className="hover:bg-[var(--surface-hover)] transition-colors">
+                      <tr key={doc.id} className="hover:bg-gray-100 transition-colors">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-lg bg-red-500/20 flex items-center justify-center flex-shrink-0">
                               <DocumentIcon className="w-4 h-4 text-red-400" />
                             </div>
                             <div className="min-w-0">
-                              <span className="text-sm font-medium text-[var(--foreground)] truncate block max-w-[200px]">
+                              <span className="text-sm font-medium text-gray-900 truncate block max-w-[200px]">
                                 {doc.title || doc.filename}
                               </span>
-                              <span className="text-xs text-[var(--foreground-muted)] uppercase">
+                              <span className="text-xs text-gray-600 uppercase">
                                 {doc.file_type}
                               </span>
                             </div>
@@ -485,12 +480,12 @@ function DocumentsPageContent() {
                           </span>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="text-sm text-[var(--foreground-muted)]">
+                          <span className="text-sm text-gray-600">
                             {formatFileSize(doc.file_size)}
                           </span>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="text-sm text-[var(--foreground-muted)]">
+                          <span className="text-sm text-gray-600">
                             {formatDate(doc.created_at)}
                           </span>
                         </td>
@@ -498,14 +493,14 @@ function DocumentsPageContent() {
                           <div className="flex items-center justify-end gap-1">
                             <button
                               onClick={() => setPreviewDoc({ id: doc.id, filename: doc.filename, fileType: getFileType(doc.filename) })}
-                              className="p-2 rounded-lg hover:bg-[var(--border)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] transition-colors"
+                              className="p-2 rounded-lg hover:bg-[var(--border)] text-gray-600 hover:text-gray-900 transition-colors"
                               title="Preview"
                             >
                               <EyeIcon className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => setDeleteConfirm(doc.id)}
-                              className="p-2 rounded-lg hover:bg-red-500/10 text-[var(--foreground-muted)] hover:text-red-400 transition-colors"
+                              className="p-2 rounded-lg hover:bg-red-500/10 text-gray-600 hover:text-red-400 transition-colors"
                               title="Delete"
                             >
                               <TrashIcon className="w-4 h-4" />
@@ -525,16 +520,16 @@ function DocumentsPageContent() {
       {/* Delete Confirmation Modal */}
       {deleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-[var(--surface)] rounded-2xl shadow-2xl p-6">
-            <h3 className="text-lg font-semibold text-[var(--foreground)] mb-2">Delete Document</h3>
-            <p className="text-sm text-[var(--foreground-muted)] mb-6">
+          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Delete Document</h3>
+            <p className="text-sm text-gray-600 mb-6">
               This will remove the document and all its chunks from the RAG system.
             </p>
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setDeleteConfirm(null)}
                 disabled={isDeleting}
-                className="px-4 py-2 rounded-xl text-sm font-medium text-[var(--foreground)] hover:bg-[var(--surface-hover)] transition-colors"
+                className="px-4 py-2 rounded-xl text-sm font-medium text-gray-900 hover:bg-gray-100 transition-colors"
               >
                 Cancel
               </button>
@@ -560,7 +555,7 @@ function DocumentsPageContent() {
           fileType={previewDoc.fileType}
         />
       )}
-    </ChatLayout>
+    </BeeBotLayout>
   );
 }
 

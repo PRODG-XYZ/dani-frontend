@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useRef, useEffect, FormEvent, KeyboardEvent } from 'react';
+import { generateUUID } from '@/utils/uuid';
 
 interface BeeBotInputProps {
-  onSendMessage: (message: string) => void;
+  onSendMessage: (message: string, attachments?: { id: string; name: string; type: 'pdf' | 'docx' | 'txt' | 'other'; size?: number }[]) => void;
   disabled?: boolean;
 }
 
@@ -13,7 +14,9 @@ export default function BeeBotInput({
 }: BeeBotInputProps) {
   const [message, setMessage] = useState('');
   const [isFocused, setIsFocused] = useState(false);
+  const [attachments, setAttachments] = useState<{ id: string; name: string; type: 'pdf' | 'docx' | 'txt' | 'other'; size?: number }[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const adjustTextareaHeight = () => {
     const textarea = textareaRef.current;
@@ -30,9 +33,42 @@ export default function BeeBotInput({
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (message.trim() && !disabled) {
-      onSendMessage(message.trim());
+      onSendMessage(message.trim(), attachments.length > 0 ? attachments : undefined);
       setMessage('');
+      setAttachments([]);
     }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const newAttachments = Array.from(files).map(file => {
+      const fileExtension = file.name.split('.').pop()?.toLowerCase();
+      let fileType: 'pdf' | 'docx' | 'txt' | 'other' = 'other';
+      
+      if (fileExtension === 'pdf') fileType = 'pdf';
+      else if (fileExtension === 'docx' || fileExtension === 'doc') fileType = 'docx';
+      else if (fileExtension === 'txt') fileType = 'txt';
+
+      return {
+        id: generateUUID(),
+        name: file.name,
+        type: fileType,
+        size: file.size,
+      };
+    });
+
+    setAttachments(prev => [...prev, ...newAttachments]);
+    
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const removeAttachment = (id: string) => {
+    setAttachments(prev => prev.filter(att => att.id !== id));
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -56,12 +92,22 @@ export default function BeeBotInput({
               {/* Attach Icon */}
               <button
                 type="button"
+                onClick={() => fileInputRef.current?.click()}
                 className="text-gray-400 hover:text-gray-600 transition-colors p-1"
+                title="Attach file"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
                 </svg>
               </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                onChange={handleFileSelect}
+                className="hidden"
+                accept=".pdf,.doc,.docx,.txt"
+              />
 
               {/* Wand Icon (before input) */}
               <div className="text-[#FF8C00]">
@@ -100,6 +146,26 @@ export default function BeeBotInput({
                 </svg>
               </button>
             </div>
+
+            {/* Attachments Preview */}
+            {attachments.length > 0 && (
+              <div className="px-4 pb-2 flex flex-wrap gap-2">
+                {attachments.map(att => (
+                  <div key={att.id} className="flex items-center gap-2 px-2 py-1 bg-gray-100 rounded-lg text-xs">
+                    <span className="text-gray-700">{att.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeAttachment(att.id)}
+                      className="text-gray-400 hover:text-gray-600"
+                    >
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Action Buttons */}
             <div className="flex items-center gap-2 px-4 pb-3 pt-1">

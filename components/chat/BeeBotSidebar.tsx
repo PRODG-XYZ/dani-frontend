@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { Conversation, AuthUser } from '@/types';
 import BeeBotUserMenu from './BeeBotUserMenu';
 
@@ -16,7 +17,10 @@ export default function BeeBotSidebar({
   currentConversationId,
   onSelectConversation,
   user,
+  onNavigateToHistory,
+  onNavigateToChat,
 }: BeeBotSidebarProps) {
+  const router = useRouter();
   const [activeNav, setActiveNav] = useState('home');
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -101,7 +105,7 @@ export default function BeeBotSidebar({
           </div>
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="flex items-center justify-center p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+            className={`flex items-center justify-center p-1.5 rounded-lg hover:bg-gray-100 transition-colors ${isCollapsed ? 'pr-2' : ''}`}
           >
             <svg className={`w-4 h-4 text-gray-400 transition-transform ${isCollapsed ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -135,7 +139,14 @@ export default function BeeBotSidebar({
       {/* Navigation */}
       <div className="px-2 mb-2">
         <button
-          onClick={() => setActiveNav('home')}
+          onClick={() => {
+            setActiveNav('home');
+            if (onNavigateToChat) {
+              onNavigateToChat();
+            } else {
+              router.push('/chat');
+            }
+          }}
           className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2 rounded-lg text-sm transition-colors ${
             activeNav === 'home' ? 'bg-gray-200 text-gray-700' : 'text-gray-500 hover:bg-gray-100'
           }`}
@@ -157,8 +168,15 @@ export default function BeeBotSidebar({
           {!isCollapsed && <span>Library</span>}
         </button>
         <button
-          onClick={() => setActiveNav('history')}
-          className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100 transition-colors`}
+          onClick={() => {
+            setActiveNav('history');
+            if (onNavigateToHistory) {
+              onNavigateToHistory();
+            }
+          }}
+          className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100 transition-colors ${
+            activeNav === 'history' ? 'bg-gray-200 text-gray-700' : ''
+          }`}
           title={isCollapsed ? 'History' : undefined}
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

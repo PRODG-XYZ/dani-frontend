@@ -20,7 +20,7 @@ const StaticSphere = () => {
 
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
-    const radius = 14;
+    const radius = 20;
 
     const gradient = ctx.createRadialGradient(
       centerX,
@@ -92,7 +92,7 @@ export default function ChatMessage({ message, isLoading, isSelected, onSelectMe
                 </div>
               )
             ) : (
-              <div className="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
                 <StaticSphere />
               </div>
             )}

@@ -14,6 +14,9 @@ interface BeeBotLayoutProps {
   onNewConversation: () => void;
   user: AuthUser | null;
   sources?: Source[];
+  showHistory?: boolean;
+  onNavigateToHistory?: () => void;
+  onNavigateToChat?: () => void;
 }
 
 export default function BeeBotLayout({
@@ -24,6 +27,9 @@ export default function BeeBotLayout({
   onNewConversation,
   user,
   sources = [],
+  showHistory = false,
+  onNavigateToHistory,
+  onNavigateToChat,
 }: BeeBotLayoutProps) {
   const [isSourcesOpen, setIsSourcesOpen] = useState(false);
 
@@ -35,18 +41,22 @@ export default function BeeBotLayout({
         currentConversationId={currentConversationId}
         onSelectConversation={onSelectConversation}
         user={user}
+        onNavigateToHistory={onNavigateToHistory}
+        onNavigateToChat={onNavigateToChat}
       />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
-        <BeeBotHeader 
-          onNewChat={onNewConversation} 
-          user={user}
-          onToggleSources={() => setIsSourcesOpen(!isSourcesOpen)}
-          isSourcesOpen={isSourcesOpen}
-          sourcesCount={sources.length}
-        />
+        {/* Header - Only show when not in history view */}
+        {!showHistory && (
+          <BeeBotHeader 
+            onNewChat={onNewConversation} 
+            user={user}
+            onToggleSources={() => setIsSourcesOpen(!isSourcesOpen)}
+            isSourcesOpen={isSourcesOpen}
+            sourcesCount={sources.length}
+          />
+        )}
 
         {/* Content */}
         {children}

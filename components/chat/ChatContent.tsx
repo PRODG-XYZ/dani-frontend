@@ -7,6 +7,7 @@ import BeeBotLayout from "@/components/layouts/BeeBotLayout";
 import BeeBotEmptyState from "@/components/chat/BeeBotEmptyState";
 import BeeBotInput from "@/components/chat/BeeBotInput";
 import ChatMessage from "@/components/chat/ChatMessage";
+import HistoryView from "@/components/chat/HistoryView";
 import ChatInput from "@/components/chat/ChatInput";
 import HomeView from "@/components/home/HomeView";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
@@ -54,6 +55,7 @@ export default function ChatContent() {
   const [meetingCategory, setMeetingCategory] = useState<MeetingCategory>('all');
   const [pendingConversationId, setPendingConversationId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showHistory, setShowHistory] = useState(false);
   // Tool state for agentic workflow (Phase 3)
   const [toolState, setToolState] = useState<{
     isActive: boolean;
@@ -1124,8 +1126,24 @@ export default function ChatContent() {
         onNewConversation={handleNewConversation}
         user={user}
         sources={sources}
+        showHistory={showHistory}
+        onNavigateToHistory={() => setShowHistory(true)}
+        onNavigateToChat={() => setShowHistory(false)}
       >
-        <div className="relative flex-1 flex flex-col overflow-hidden bg-white">
+        {showHistory ? (
+          <HistoryView
+            conversations={conversations}
+            onSelectConversation={(id) => {
+              handleSelectConversation(id);
+              setShowHistory(false);
+            }}
+            onNewConversation={() => {
+              handleNewConversation();
+              setShowHistory(false);
+            }}
+          />
+        ) : (
+          <div className="relative flex-1 flex flex-col overflow-hidden bg-white">
           {/* Content Area */}
           <div className="flex-1 overflow-y-auto">
             {currentConversation.messages.length === 0 ? (
@@ -1183,11 +1201,12 @@ export default function ChatContent() {
           {/* Fixed Input at Bottom */}
           <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100">
             <BeeBotInput
-              onSendMessage={(msg) => handleSendMessage(msg)}
+              onSendMessage={(msg, attachments) => handleSendMessage(msg, undefined, attachments)}
               disabled={isLoading}
             />
           </div>
         </div>
+        )}
       </BeeBotLayout>
     </ProtectedRoute>
   );
