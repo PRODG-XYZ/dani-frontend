@@ -3,6 +3,9 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import ChatLayout from "@/components/layouts/ChatLayout";
+import BeeBotLayout from "@/components/layouts/BeeBotLayout";
+import BeeBotEmptyState from "@/components/chat/BeeBotEmptyState";
+import BeeBotInput from "@/components/chat/BeeBotInput";
 import ChatMessage from "@/components/chat/ChatMessage";
 import ChatInput from "@/components/chat/ChatInput";
 import HomeView from "@/components/home/HomeView";
@@ -65,7 +68,7 @@ export default function ChatContent() {
   const loadingConversationRef = useRef<string | null>(null); // Track which conversation is being loaded
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { signOut, isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  const { signOut, isAuthenticated, isLoading: isAuthLoading, user } = useAuth();
 
   // Load conversations from backend on mount (only when authenticated)
   useEffect(() => {
@@ -1091,28 +1094,20 @@ export default function ChatContent() {
 
   return (
     <ProtectedRoute>
-      <ChatLayout
+      <BeeBotLayout
         conversations={conversations}
         currentConversationId={currentConversationId || "new"}
         onSelectConversation={handleSelectConversation}
         onNewConversation={handleNewConversation}
-        onDeleteConversation={handleDeleteConversation}
-        onLogout={handleLogout}
-        title={currentConversation.title}
-        showHeader={currentConversation.messages.length > 0}
-        sources={sources}
+        user={user}
       >
-        <div className="relative flex-1 flex flex-col h-full overflow-hidden">
-          {/* Messages Area - scrolls behind the input */}
-          <div
-            className={`flex-1 overflow-y-auto ${
-              currentConversation.messages.length > 0 ? "pb-32" : ""
-            }`}
-          >
+        <div className="relative flex-1 flex flex-col overflow-hidden bg-white">
+          {/* Content Area */}
+          <div className="flex-1 overflow-y-auto">
             {currentConversation.messages.length === 0 ? (
-              <HomeView onSendMessage={handleSendMessage} />
+              <BeeBotEmptyState userName={user?.name || null} />
             ) : (
-              <div className="max-w-2xl mx-auto py-4 px-4 w-full">
+              <div className="max-w-3xl mx-auto py-4 px-8 w-full pb-40">
                 {currentConversation.messages.map((message) => (
                   <ChatMessage
                     key={message.id}
@@ -1133,9 +1128,8 @@ export default function ChatContent() {
                     isLoading={isLoading && !streamingContent}
                   />
                 )}
-                {/* Tool UI - shows when a tool is being used */}
                 {toolState.isActive && toolState.toolName && (
-                  <div className="max-w-2xl mx-auto">
+                  <div>
                     <ToolCallBlock
                       toolName={toolState.toolName as "infographic_generator" | "content_writer"}
                       status={toolState.status || "starting"}
@@ -1149,7 +1143,7 @@ export default function ChatContent() {
                       />
                     )}
                     {toolState.status === "error" && toolState.error && (
-                      <div className="p-4 rounded-lg border border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30 text-red-700 dark:text-red-300 text-sm">
+                      <div className="p-4 rounded-lg border border-red-200 bg-red-50 text-red-700 text-sm">
                         Error: {toolState.error}
                       </div>
                     )}
@@ -1160,23 +1154,15 @@ export default function ChatContent() {
             )}
           </div>
 
-          {/* Input Area - Fixed floating at bottom when there are messages */}
-          {currentConversation.messages.length > 0 && (
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[var(--background)] via-[var(--background)] to-transparent pt-8">
-              <ChatInput
-                onSendMessage={handleSendMessage}
-                disabled={isLoading}
-                placeholder="Continue the conversation..."
-                docType={docType}
-                onDocTypeChange={setDocType}
-                meetingCategory={meetingCategory}
-                onMeetingCategoryChange={setMeetingCategory}
-                initialAttachments={currentConversation.activeAttachments}
-              />
-            </div>
-          )}
+          {/* Fixed Input at Bottom */}
+          <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100">
+            <BeeBotInput
+              onSendMessage={(msg) => handleSendMessage(msg)}
+              disabled={isLoading}
+            />
+          </div>
         </div>
-      </ChatLayout>
+      </BeeBotLayout>
     </ProtectedRoute>
   );
 }

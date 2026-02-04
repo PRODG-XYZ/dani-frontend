@@ -685,3 +685,192 @@ textarea {
     height: 150px;
   }
 }
+
+/* ========================================
+   LANDING PAGE STYLES
+   ======================================== */
+
+/* Landing Card - Main white card container */
+.landing-card {
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border);
+  border-radius: 1.5rem;
+  padding: 2rem;
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-normal) ease;
+}
+
+.landing-card:hover {
+  box-shadow: var(--shadow-lg);
+  border-color: var(--border-hover);
+}
+
+/* Robot Character */
+.robot-character {
+  animation: float 4s ease-in-out infinite;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.1));
+}
+
+/* Input Control Buttons */
+.input-control-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.875rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  color: var(--foreground-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast) ease;
+  white-space: nowrap;
+}
+
+.input-control-btn:hover {
+  background: var(--surface-hover);
+  border-color: var(--border-hover);
+  color: var(--foreground);
+}
+
+.input-control-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Primary Input Control Button (Ideas) */
+.input-control-btn-primary {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.2);
+  color: var(--primary);
+}
+
+.input-control-btn-primary:hover {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+/* Icon-only Input Control Button */
+.input-control-btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.625rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  color: var(--foreground-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast) ease;
+}
+
+.input-control-btn-icon:hover {
+  background: var(--surface-hover);
+  border-color: var(--border-hover);
+  color: var(--foreground);
+}
+
+/* Category Tabs */
+.category-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  background: transparent;
+  border: none;
+  border-radius: 0.75rem;
+  color: var(--foreground-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast) ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.category-tab:hover {
+  background: var(--surface-hover);
+  color: var(--foreground);
+}
+
+.category-tab-active {
+  background: var(--surface);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+}
+
+/* Suggestion Cards */
+.suggestion-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  padding: 1rem 1.25rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  cursor: pointer;
+  transition: all var(--transition-fast) ease;
+  text-align: left;
+}
+
+.suggestion-card:hover {
+  background: var(--surface-hover);
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+
+.suggestion-card-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--foreground-muted);
+  transition: all var(--transition-fast) ease;
+}
+
+.suggestion-card:hover .suggestion-card-arrow {
+  color: var(--foreground);
+  transform: translateX(4px);
+}
+
+.suggestion-card-hover-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--foreground-muted);
+  transition: all var(--transition-fast) ease;
+}
+
+.suggestion-card:hover .suggestion-card-hover-icon {
+  color: var(--primary);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .landing-card {
+    padding: 1.5rem;
+  }
+
+  .robot-character {
+    display: none;
+  }
+
+  .input-control-btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+
+  .category-tab {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.8125rem;
+  }
+
+  .suggestion-card {
+    padding: 0.875rem 1rem;
+  }
+}
