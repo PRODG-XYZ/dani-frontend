@@ -17,6 +17,8 @@ interface BeeBotLayoutProps {
   showHistory?: boolean;
   onNavigateToHistory?: () => void;
   onNavigateToChat?: () => void;
+  isLoadingConversations?: boolean;
+  isLoadingAuth?: boolean;
 }
 
 export default function BeeBotLayout({
@@ -30,6 +32,8 @@ export default function BeeBotLayout({
   showHistory = false,
   onNavigateToHistory,
   onNavigateToChat,
+  isLoadingConversations = false,
+  isLoadingAuth = false,
 }: BeeBotLayoutProps) {
   const [isSourcesOpen, setIsSourcesOpen] = useState(false);
 
@@ -43,6 +47,8 @@ export default function BeeBotLayout({
         user={user}
         onNavigateToHistory={onNavigateToHistory}
         onNavigateToChat={onNavigateToChat}
+        isLoadingConversations={isLoadingConversations}
+        isLoadingAuth={isLoadingAuth}
       />
 
       {/* Main Content */}

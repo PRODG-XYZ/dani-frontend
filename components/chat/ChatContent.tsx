@@ -8,6 +8,8 @@ import BeeBotEmptyState from "@/components/chat/BeeBotEmptyState";
 import BeeBotInput from "@/components/chat/BeeBotInput";
 import ChatMessage from "@/components/chat/ChatMessage";
 import HistoryView from "@/components/chat/HistoryView";
+import ChatSkeleton from "@/components/chat/ChatSkeleton";
+import ConversationsSkeleton from "@/components/chat/ConversationsSkeleton";
 import ChatInput from "@/components/chat/ChatInput";
 import HomeView from "@/components/home/HomeView";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
@@ -1047,15 +1049,7 @@ export default function ChatContent() {
     router.push("/");
   };
 
-  if (isLoadingHistory) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-[var(--background)]">
-        <div className="animate-pulse text-[var(--foreground-secondary)]">
-          Loading conversations...
-        </div>
-      </div>
-    );
-  }
+  // Don't show full skeleton - render UI immediately with loading state in sidebar
 
   if (error) {
     return (
@@ -1129,6 +1123,8 @@ export default function ChatContent() {
         showHistory={showHistory}
         onNavigateToHistory={() => setShowHistory(true)}
         onNavigateToChat={() => setShowHistory(false)}
+        isLoadingConversations={isLoadingHistory}
+        isLoadingAuth={isAuthLoading}
       >
         {showHistory ? (
           <HistoryView

@@ -1,10 +1,48 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
-import Logo from '@/components/ui/Logo';
 import { useAuth } from '@/contexts/AuthContext';
+
+// Static Pulsating Sphere for Logo (no animation)
+const StaticSphere = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const radius = 20;
+
+    const gradient = ctx.createRadialGradient(
+      centerX,
+      centerY,
+      0,
+      centerX,
+      centerY,
+      radius
+    );
+
+    gradient.addColorStop(0, 'rgba(255, 140, 0, 1)');
+    gradient.addColorStop(0.3, 'rgba(255, 100, 80, 0.9)');
+    gradient.addColorStop(0.5, 'rgba(255, 120, 150, 0.6)');
+    gradient.addColorStop(0.7, 'rgba(255, 180, 200, 0.3)');
+    gradient.addColorStop(1, 'rgba(255, 200, 200, 0)');
+
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    ctx.fill();
+  }, []);
+
+  return <canvas ref={canvasRef} width={48} height={48} className="rounded-xl" />;
+};
 
 export default function AuthPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -54,99 +92,68 @@ export default function AuthPage() {
     setIsLoading(false);
   };
 
-  // Show loading while checking auth status
-  if (authLoading) {
-    return (
-      <div className="auth-page">
-        <div className="auth-bg">
-          <div className="auth-gradient-orb auth-gradient-orb-1" />
-          <div className="auth-gradient-orb auth-gradient-orb-2" />
-          <div className="auth-gradient-orb auth-gradient-orb-3" />
-        </div>
-        <div className="flex items-center justify-center h-screen">
-          <div className="flex flex-col items-center gap-4">
-            <div className="w-8 h-8 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
-            <p className="text-sm text-[var(--foreground-secondary)]">Loading...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Don't show loading spinner - just render immediately and let redirect happen
 
   return (
-    <div className="auth-page">
-      {/* Animated background */}
-      <div className="auth-bg">
-        <div className="auth-gradient-orb auth-gradient-orb-1" />
-        <div className="auth-gradient-orb auth-gradient-orb-2" />
-        <div className="auth-gradient-orb auth-gradient-orb-3" />
-      </div>
-
+    <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA] px-4">
       {/* Auth Card */}
-      <div className="auth-container">
-        <div className="auth-card glass-strong animate-scale-in">
+      <div className="w-full max-w-md">
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-lg p-8">
           {/* Logo & Branding */}
-          <div className="auth-header">
-            <div className="flex justify-center mb-4">
-              <Logo size="lg" showText={true} />
+          <div className="text-center mb-8">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center overflow-hidden">
+                <StaticSphere />
+              </div>
+              <span className="text-2xl font-bold text-gray-900">DANI</span>
             </div>
-            <p className="auth-subtitle">
+            <p className="text-sm text-gray-600">
               Your AI-powered meeting intelligence assistant
             </p>
           </div>
 
           {/* Divider with text */}
-          <div className="auth-divider">
-            <span className="auth-divider-line" />
-            <span className="auth-divider-text">Sign in to continue</span>
-            <span className="auth-divider-line" />
+          <div className="flex items-center gap-4 mb-6">
+            <div className="flex-1 h-px bg-gray-200" />
+            <span className="text-xs text-gray-500 font-medium">Sign in to continue</span>
+            <div className="flex-1 h-px bg-gray-200" />
           </div>
 
           {/* Error Message */}
           {error && (
-            <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-sm text-center">
+            <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm text-center">
               {error}
             </div>
           )}
 
-          {/* Loading State */}
-          {isLoading && (
-            <div className="flex justify-center mb-4">
-              <div className="flex items-center gap-3 text-[var(--foreground-secondary)]">
-                <div className="w-5 h-5 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
-                <span className="text-sm">Signing in...</span>
-              </div>
-            </div>
-          )}
+          {/* Error only - no loading spinner */}
 
           {/* Google Sign In Button */}
-          {!isLoading && (
-            <div className="flex justify-center">
-              <GoogleLogin
-                onSuccess={handleGoogleSuccess}
-                onError={handleGoogleError}
-                theme="outline"
-                size="large"
-                text="continue_with"
-                shape="rectangular"
-                logo_alignment="left"
-                width="300"
-              />
-            </div>
-          )}
+          <div className={`flex justify-center ${isLoading ? 'pointer-events-none opacity-50' : ''}`}>
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={handleGoogleError}
+              theme="outline"
+              size="large"
+              text="continue_with"
+              shape="rectangular"
+              logo_alignment="left"
+              width="300"
+            />
+          </div>
 
           {/* Terms */}
-          <p className="auth-terms mt-6">
+          <p className="text-xs text-gray-500 text-center mt-6">
             By signing in, you agree to our{' '}
-            <a href="#" className="auth-link">Terms of Service</a>
+            <a href="#" className="text-[#FF8C00] hover:underline">Terms of Service</a>
             {' '}and{' '}
-            <a href="#" className="auth-link">Privacy Policy</a>
+            <a href="#" className="text-[#FF8C00] hover:underline">Privacy Policy</a>
           </p>
         </div>
 
         {/* Footer */}
-        <div className="auth-footer animate-fade-in">
-          <p>© {year} DANI. All rights reserved.</p>
+        <div className="mt-8 text-center">
+          <p className="text-xs text-gray-400">© {year} DANI. All rights reserved.</p>
         </div>
       </div>
     </div>

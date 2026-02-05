@@ -271,6 +271,14 @@ function DocumentsPageContent() {
     router.push('/chat');
   };
 
+  const handleNavigateToHistory = () => {
+    router.push('/chat');
+  };
+
+  const handleNavigateToChat = () => {
+    // Already on documents page, no need to navigate
+  };
+
   const completedUploads = uploadingFiles.filter(f => f.status === 'completed').length;
   const totalUploads = uploadingFiles.length;
 
@@ -286,6 +294,8 @@ function DocumentsPageContent() {
       onNewConversation={handleNewConversation}
       user={user}
       sources={[]}
+      onNavigateToHistory={handleNavigateToHistory}
+      onNavigateToChat={handleNavigateToChat}
     >
       {/* Scrollable Content */}
       <div className="h-full overflow-y-auto">

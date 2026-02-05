@@ -18,20 +18,9 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     }
   }, [isAuthenticated, isLoading, router]);
 
-  // Show loading state while checking auth
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-[var(--background)]">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-8 h-8 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-[var(--foreground-secondary)]">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Don't render children if not authenticated
-  if (!isAuthenticated) {
+  // Render children immediately - let them handle their own loading states
+  // Only redirect if auth check is complete and user is not authenticated
+  if (!isLoading && !isAuthenticated) {
     return null;
   }
 
