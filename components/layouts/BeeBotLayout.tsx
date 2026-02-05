@@ -16,9 +16,11 @@ interface BeeBotLayoutProps {
   sources?: Source[];
   showHistory?: boolean;
   showUserManagement?: boolean;
+  showLibrary?: boolean;
   onNavigateToHistory?: () => void;
   onNavigateToChat?: () => void;
   onNavigateToUserManagement?: () => void;
+  onNavigateToLibrary?: () => void;
   isLoadingConversations?: boolean;
   isLoadingAuth?: boolean;
 }
@@ -33,9 +35,11 @@ export default function BeeBotLayout({
   sources = [],
   showHistory = false,
   showUserManagement = false,
+  showLibrary = false,
   onNavigateToHistory,
   onNavigateToChat,
   onNavigateToUserManagement,
+  onNavigateToLibrary,
   isLoadingConversations = false,
   isLoadingAuth = false,
 }: BeeBotLayoutProps) {
@@ -52,14 +56,15 @@ export default function BeeBotLayout({
         onNavigateToHistory={onNavigateToHistory}
         onNavigateToChat={onNavigateToChat}
         onNavigateToUserManagement={onNavigateToUserManagement}
+        onNavigateToLibrary={onNavigateToLibrary}
         isLoadingConversations={isLoadingConversations}
         isLoadingAuth={isLoadingAuth}
       />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header - Only show when not in history or user management view */}
-        {!showHistory && !showUserManagement && (
+        {/* Header - Only show when not in history, user management, or library view */}
+        {!showHistory && !showUserManagement && !showLibrary && (
           <BeeBotHeader 
             onNewChat={onNewConversation} 
             user={user}

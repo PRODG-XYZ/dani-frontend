@@ -897,9 +897,10 @@ export async function listDocuments(
   skip: number = 0,
   limit: number = 20,
   status?: DocumentStatus,
-  fileType?: DocumentType
+  fileType?: DocumentType,
+  search?: string
 ): Promise<DocumentListResponse> {
-  console.log("[API] listDocuments:", { skip, limit, status, fileType });
+  console.log("[API] listDocuments:", { skip, limit, status, fileType, search });
   const authHeaders = await getAuthHeaders();
 
   const params = new URLSearchParams();
@@ -907,6 +908,7 @@ export async function listDocuments(
   params.append("limit", limit.toString());
   if (status) params.append("status", status);
   if (fileType) params.append("file_type", fileType);
+  if (search && search.trim()) params.append("search", search.trim());
 
   const response = await fetch(`${API_URL}/documents?${params.toString()}`, {
     headers: authHeaders,
@@ -927,6 +929,29 @@ export async function getDocument(
 
   const response = await fetch(`${API_URL}/documents/${documentId}`, {
     headers: authHeaders,
+  });
+
+  await handleResponse(response);
+  return response.json();
+}
+
+/**
+ * Update document metadata (title, description)
+ */
+export async function updateDocument(
+  documentId: string,
+  data: { title?: string; description?: string }
+): Promise<DocumentResponse> {
+  console.log("[API] updateDocument:", { documentId, data });
+  const authHeaders = await getAuthHeaders();
+
+  const response = await fetch(`${API_URL}/documents/${documentId}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeaders,
+    },
+    body: JSON.stringify(data),
   });
 
   await handleResponse(response);

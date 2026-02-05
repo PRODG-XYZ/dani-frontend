@@ -8,6 +8,7 @@ import BeeBotEmptyState from "@/components/chat/BeeBotEmptyState";
 import BeeBotInput from "@/components/chat/BeeBotInput";
 import ChatMessage from "@/components/chat/ChatMessage";
 import HistoryView from "@/components/chat/HistoryView";
+import LibraryView from "@/components/chat/LibraryView";
 import ChatSkeleton from "@/components/chat/ChatSkeleton";
 import ConversationsSkeleton from "@/components/chat/ConversationsSkeleton";
 import UserManagementView from "@/components/ui/UserManagementView";
@@ -60,6 +61,7 @@ export default function ChatContent() {
   const [error, setError] = useState<string | null>(null);
   const [showHistory, setShowHistory] = useState(false);
   const [showUserManagement, setShowUserManagement] = useState(false);
+  const [showLibrary, setShowLibrary] = useState(false);
   // Tool state for agentic workflow (Phase 3)
   const [toolState, setToolState] = useState<{
     isActive: boolean;
@@ -1124,22 +1126,33 @@ export default function ChatContent() {
         sources={sources}
         showHistory={showHistory}
         showUserManagement={showUserManagement}
+        showLibrary={showLibrary}
         onNavigateToHistory={() => {
           setShowHistory(true);
           setShowUserManagement(false);
+          setShowLibrary(false);
         }}
         onNavigateToChat={() => {
           setShowHistory(false);
           setShowUserManagement(false);
+          setShowLibrary(false);
         }}
         onNavigateToUserManagement={() => {
           setShowHistory(false);
           setShowUserManagement(true);
+          setShowLibrary(false);
+        }}
+        onNavigateToLibrary={() => {
+          setShowHistory(false);
+          setShowUserManagement(false);
+          setShowLibrary(true);
         }}
         isLoadingConversations={isLoadingHistory}
         isLoadingAuth={isAuthLoading}
       >
-        {showUserManagement ? (
+        {showLibrary ? (
+          <LibraryView />
+        ) : showUserManagement ? (
           <UserManagementView />
         ) : showHistory ? (
           <HistoryView
