@@ -599,6 +599,60 @@ export async function getConversationWithMessages(
 }
 
 /**
+ * Export a conversation for download
+ */
+export interface ExportedConversation {
+  id: string;
+  title: string;
+  created_at: string;
+  messages: Array<Record<string, unknown>>;
+  metadata?: Record<string, unknown>;
+}
+
+export async function exportConversation(
+  conversationId: string
+): Promise<ExportedConversation> {
+  console.log("[API] exportConversation:", conversationId);
+  const authHeaders = await getAuthHeaders();
+  const response = await safeFetch(
+    `${API_URL}/conversations/${conversationId}/export`,
+    {
+      headers: authHeaders,
+    }
+  );
+
+  await handleResponse(response);
+  return response.json();
+}
+
+/**
+ * Download conversation as JSON file
+ */
+export async function downloadConversation(conversationId: string): Promise<void> {
+  try {
+    const exported = await exportConversation(conversationId);
+    
+    // Create a blob with the JSON data
+    const blob = new Blob([JSON.stringify(exported, null, 2)], {
+      type: 'application/json',
+    });
+    
+    // Create a download link
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `conversation-${conversationId}-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error('[API] Failed to download conversation:', error);
+    throw error;
+  }
+}
+
+/**
  * Delete a conversation
  */
 export async function deleteConversation(

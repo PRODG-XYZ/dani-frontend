@@ -2,12 +2,23 @@
 
 import { useState } from 'react';
 import { Conversation } from '@/types';
+import { downloadConversation } from '@/services/api';
 
 interface HistoryViewProps {
   conversations: Conversation[];
   onSelectConversation: (id: string) => void;
   onNewConversation: () => void;
 }
+
+const handleExportConversation = async (e: React.MouseEvent, conversationId: string) => {
+  e.stopPropagation(); // Prevent selecting the conversation
+  try {
+    await downloadConversation(conversationId);
+  } catch (error) {
+    console.error('Failed to export conversation:', error);
+    alert('Failed to export conversation. Please try again.');
+  }
+};
 
 export default function HistoryView({ conversations, onSelectConversation, onNewConversation }: HistoryViewProps) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -93,12 +104,14 @@ export default function HistoryView({ conversations, onSelectConversation, onNew
           ) : (
             <div className="space-y-0">
               {sortedConversations.map((conversation) => (
-                <button
+                <div
                   key={conversation.id}
-                  onClick={() => onSelectConversation(conversation.id)}
-                  className="w-full text-left px-4 py-4 rounded-lg hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0 group"
+                  className="flex items-center gap-3 px-4 py-4 rounded-lg hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0 group"
                 >
-                  <div className="flex items-start gap-3">
+                  <button
+                    onClick={() => onSelectConversation(conversation.id)}
+                    className="flex-1 text-left flex items-start gap-3 min-w-0"
+                  >
                     <div className="flex-shrink-0 mt-1">
                       <svg className="w-5 h-5 text-gray-400 group-hover:text-[#FF8C00] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -112,8 +125,17 @@ export default function HistoryView({ conversations, onSelectConversation, onNew
                         Last message {formatDate(conversation.updatedAt)}
                       </p>
                     </div>
-                  </div>
-                </button>
+                  </button>
+                  <button
+                    onClick={(e) => handleExportConversation(e, conversation.id)}
+                    className="p-2 text-gray-400 hover:text-[#FF8C00] hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
+                    title="Export conversation"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                    </svg>
+                  </button>
+                </div>
               ))}
             </div>
           )}

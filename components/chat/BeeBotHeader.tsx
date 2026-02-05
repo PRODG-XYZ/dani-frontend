@@ -1,6 +1,7 @@
 'use client';
 
 import { AuthUser } from '@/types';
+import { downloadConversation } from '@/services/api';
 
 interface BeeBotHeaderProps {
   onNewChat: () => void;
@@ -8,6 +9,7 @@ interface BeeBotHeaderProps {
   onToggleSources?: () => void;
   isSourcesOpen?: boolean;
   sourcesCount?: number;
+  currentConversationId?: string | null;
 }
 
 export default function BeeBotHeader({ 
@@ -16,11 +18,33 @@ export default function BeeBotHeader({
   onToggleSources,
   isSourcesOpen = false,
   sourcesCount = 0,
+  currentConversationId,
 }: BeeBotHeaderProps) {
+  const handleExport = async () => {
+    if (!currentConversationId || currentConversationId === 'new') return;
+    try {
+      await downloadConversation(currentConversationId);
+    } catch (error) {
+      console.error('Failed to export conversation:', error);
+      alert('Failed to export conversation. Please try again.');
+    }
+  };
   return (
     <header className="flex items-center justify-end px-8 py-3 bg-white border-b border-gray-200">
       {/* Right - Actions */}
       <div className="flex items-center gap-3">
+        {/* Export Button - Only show when viewing a conversation */}
+        {currentConversationId && currentConversationId !== 'new' && (
+          <button
+            onClick={handleExport}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
+            title="Export conversation"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+            </svg>
+          </button>
+        )}
         {/* Sources Toggle Button */}
         {onToggleSources && (
           <button

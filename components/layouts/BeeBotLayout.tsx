@@ -66,6 +66,7 @@ export default function BeeBotLayout({
             onToggleSources={() => setIsSourcesOpen(!isSourcesOpen)}
             isSourcesOpen={isSourcesOpen}
             sourcesCount={sources.length}
+            currentConversationId={currentConversationId}
           />
         )}
 
