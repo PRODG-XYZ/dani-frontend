@@ -374,19 +374,55 @@ export async function uploadUserAvatar(file: File): Promise<{
   return response.json();
 }
 
+/**
+ * Get current user's rate limit status
+ */
+export interface RateLimitStatus {
+  minute: {
+    used: number;
+    limit: number;
+    reset_in: number;
+  };
+  day: {
+    used: number;
+    limit: number;
+    reset_in: number;
+  };
+}
+
+export async function getUserRateLimit(): Promise<RateLimitStatus> {
+  const authHeaders = await getAuthHeaders();
+  const response = await fetch(`${API_URL}/users/me/rate-limit`, {
+    headers: authHeaders,
+  });
+
+  await handleResponse(response);
+  return response.json();
+}
+
 
 /**
  * Admin: List all users
  */
-export async function adminListUsers(): Promise<Array<{
+export interface UserResponse {
   id: string;
-  name: string;
   email: string;
-  picture_url?: string;
+  name: string;
+  picture_url: string | null;
   created_at: string;
-}>> {
+  last_login_at: string | null;
+}
+
+export async function adminListUsers(
+  skip: number = 0,
+  limit: number = 100
+): Promise<UserResponse[]> {
   const authHeaders = await getAuthHeaders();
-  const response = await fetch(`${API_URL}/users/`, {
+  const params = new URLSearchParams();
+  params.append("skip", skip.toString());
+  params.append("limit", limit.toString());
+
+  const response = await fetch(`${API_URL}/users/?${params.toString()}`, {
     headers: authHeaders,
   });
 
@@ -397,7 +433,7 @@ export async function adminListUsers(): Promise<Array<{
 /**
  * Admin: Create user
  */
-export async function adminCreateUser(data: { name: string; email: string }) {
+export async function adminCreateUser(data: { name: string; email: string }): Promise<UserResponse> {
   const authHeaders = await getAuthHeaders();
   const response = await fetch(`${API_URL}/users/`, {
     method: "POST",
@@ -415,7 +451,10 @@ export async function adminCreateUser(data: { name: string; email: string }) {
 /**
  * Admin: Update user
  */
-export async function adminUpdateUser(id: string, data: { name?: string; picture_url?: string }) {
+export async function adminUpdateUser(
+  id: string,
+  data: { name?: string; picture_url?: string }
+): Promise<UserResponse> {
   const authHeaders = await getAuthHeaders();
   const response = await fetch(`${API_URL}/users/${id}`, {
     method: "PUT",

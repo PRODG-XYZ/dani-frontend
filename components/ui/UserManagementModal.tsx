@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { CloseIcon } from '@/components/ui/Icons';
 import Avatar from '@/components/ui/Avatar';
-import { adminListUsers, adminCreateUser, adminUpdateUser, adminDeleteUser } from '@/services/api';
+import { adminListUsers, adminCreateUser, adminUpdateUser, adminDeleteUser, UserResponse } from '@/services/api';
 
 interface User {
   id: string;
   name: string;
   email: string;
-  picture_url?: string;
+  picture_url?: string | null;
 }
 
 interface UserManagementModalProps {
@@ -96,7 +96,7 @@ export default function UserManagementModal({ onClose }: UserManagementModalProp
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in"
       onClick={onClose}
     >
       <div 

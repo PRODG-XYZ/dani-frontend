@@ -13,6 +13,7 @@ interface BeeBotSidebarProps {
   user: AuthUser | null;
   onNavigateToHistory?: () => void;
   onNavigateToChat?: () => void;
+  onNavigateToUserManagement?: () => void;
   isLoadingConversations?: boolean;
   isLoadingAuth?: boolean;
 }
@@ -24,6 +25,7 @@ export default function BeeBotSidebar({
   user,
   onNavigateToHistory,
   onNavigateToChat,
+  onNavigateToUserManagement,
   isLoadingConversations = false,
   isLoadingAuth = false,
 }: BeeBotSidebarProps) {
@@ -267,7 +269,14 @@ export default function BeeBotSidebar({
             
             {/* User Menu Popup */}
             {isUserMenuOpen && (
-              <BeeBotUserMenu user={user} onClose={() => setIsUserMenuOpen(false)} />
+              <BeeBotUserMenu 
+                user={user} 
+                onClose={() => setIsUserMenuOpen(false)}
+                onOpenUserManagement={() => {
+                  setIsUserMenuOpen(false);
+                  onNavigateToUserManagement?.();
+                }}
+              />
             )}
           </>
         )}

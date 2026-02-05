@@ -10,6 +10,7 @@ import ChatMessage from "@/components/chat/ChatMessage";
 import HistoryView from "@/components/chat/HistoryView";
 import ChatSkeleton from "@/components/chat/ChatSkeleton";
 import ConversationsSkeleton from "@/components/chat/ConversationsSkeleton";
+import UserManagementView from "@/components/ui/UserManagementView";
 import ChatInput from "@/components/chat/ChatInput";
 import HomeView from "@/components/home/HomeView";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
@@ -58,6 +59,7 @@ export default function ChatContent() {
   const [pendingConversationId, setPendingConversationId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showHistory, setShowHistory] = useState(false);
+  const [showUserManagement, setShowUserManagement] = useState(false);
   // Tool state for agentic workflow (Phase 3)
   const [toolState, setToolState] = useState<{
     isActive: boolean;
@@ -1121,12 +1123,25 @@ export default function ChatContent() {
         user={user}
         sources={sources}
         showHistory={showHistory}
-        onNavigateToHistory={() => setShowHistory(true)}
-        onNavigateToChat={() => setShowHistory(false)}
+        showUserManagement={showUserManagement}
+        onNavigateToHistory={() => {
+          setShowHistory(true);
+          setShowUserManagement(false);
+        }}
+        onNavigateToChat={() => {
+          setShowHistory(false);
+          setShowUserManagement(false);
+        }}
+        onNavigateToUserManagement={() => {
+          setShowHistory(false);
+          setShowUserManagement(true);
+        }}
         isLoadingConversations={isLoadingHistory}
         isLoadingAuth={isAuthLoading}
       >
-        {showHistory ? (
+        {showUserManagement ? (
+          <UserManagementView />
+        ) : showHistory ? (
           <HistoryView
             conversations={conversations}
             onSelectConversation={(id) => {

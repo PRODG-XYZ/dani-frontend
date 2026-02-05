@@ -3,16 +3,15 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AuthUser } from '@/types';
-import UserManagementModal from '@/components/ui/UserManagementModal';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface BeeBotUserMenuProps {
   user: AuthUser | null;
   onClose?: () => void;
+  onOpenUserManagement?: () => void;
 }
 
-export default function BeeBotUserMenu({ user, onClose }: BeeBotUserMenuProps) {
-  const [isUserManagementOpen, setIsUserManagementOpen] = useState(false);
+export default function BeeBotUserMenu({ user, onClose, onOpenUserManagement }: BeeBotUserMenuProps) {
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const router = useRouter();
   const { signOut, updateUser } = useAuth();
@@ -51,8 +50,7 @@ export default function BeeBotUserMenu({ user, onClose }: BeeBotUserMenuProps) {
       ),
       label: 'Manage users',
       onClick: () => {
-        setIsUserManagementOpen(true);
-        onClose?.();
+        onOpenUserManagement?.() || onClose?.();
       },
     },
     {
@@ -147,10 +145,6 @@ export default function BeeBotUserMenu({ user, onClose }: BeeBotUserMenuProps) {
       </div>
 
       {/* Modals */}
-      {isUserManagementOpen && (
-        <UserManagementModal onClose={() => setIsUserManagementOpen(false)} />
-      )}
-
       {isEditProfileOpen && user && (
         <EditProfileModal
           user={user}
