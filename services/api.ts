@@ -1230,11 +1230,17 @@ export async function generateInfographic(
  */
 export async function listInfographics(
   limit = 20,
-  offset = 0
-): Promise<{ items: InfographicListItem[] }> {
+  offset = 0,
+  status?: string | null
+): Promise<{ items: InfographicListItem[]; total: number; limit: number; offset: number }> {
   const authHeaders = await getAuthHeaders();
+  const params = new URLSearchParams();
+  params.append("limit", limit.toString());
+  params.append("offset", offset.toString());
+  if (status) params.append("status", status);
+
   const response = await fetch(
-    `${API_URL}/infographic/?limit=${limit}&offset=${offset}`,
+    `${API_URL}/infographic/?${params.toString()}`,
     {
       headers: authHeaders,
     }
@@ -1274,10 +1280,134 @@ export async function getInfographicDownloadUrl(id: string): Promise<string> {
 }
 
 /**
+ * Generate infographic and return image directly
+ */
+export async function generateInfographicImage(
+  request: InfographicRequest
+): Promise<Blob> {
+  const authHeaders = await getAuthHeaders();
+  const response = await fetch(`${API_URL}/infographic/generate/image`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeaders,
+    },
+    body: JSON.stringify(request),
+  });
+  await handleResponse(response);
+  return response.blob();
+}
+
+/**
+ * Extract structured infographic data without generating image
+ */
+export async function extractInfographicData(
+  request: InfographicRequest
+): Promise<StructuredData> {
+  const authHeaders = await getAuthHeaders();
+  const response = await fetch(`${API_URL}/infographic/extract`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeaders,
+    },
+    body: JSON.stringify(request),
+  });
+  await handleResponse(response);
+  return response.json();
+}
+
+/**
+ * Generate infographic in spec schema format
+ */
+export interface SpecSchema {
+  title: string;
+  sections: Array<{
+    header: string;
+    bullets: string[];
+  }>;
+  recommended_visuals: string;
+}
+
+export interface SpecSchemaResponse {
+  spec_schema: SpecSchema;
+  raw_structured_data: StructuredData;
+  sources: any[];
+  confidence: any;
+  timing: any;
+  metadata: any;
+}
+
+export async function generateInfographicSpecSchema(
+  request: InfographicRequest
+): Promise<SpecSchemaResponse> {
+  const authHeaders = await getAuthHeaders();
+  const response = await fetch(`${API_URL}/infographic/generate/spec-schema`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeaders,
+    },
+    body: JSON.stringify(request),
+  });
+  await handleResponse(response);
+  return response.json();
+}
+
+/**
+ * Convert existing structured data to spec schema format
+ */
+export async function convertToSpecSchema(
+  structuredData: StructuredData
+): Promise<SpecSchema> {
+  const authHeaders = await getAuthHeaders();
+  const response = await fetch(`${API_URL}/infographic/convert/spec-schema`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeaders,
+    },
+    body: JSON.stringify(structuredData),
+  });
+  await handleResponse(response);
+  return response.json();
+}
+
+/**
+ * Delete an infographic
+ */
+export async function deleteInfographic(
+  infographicId: string,
+  hardDelete: boolean = false
+): Promise<string> {
+  const authHeaders = await getAuthHeaders();
+  const params = new URLSearchParams();
+  if (hardDelete) params.append("hard_delete", "true");
+
+  const response = await fetch(
+    `${API_URL}/infographic/${infographicId}?${params.toString()}`,
+    {
+      method: "DELETE",
+      headers: authHeaders,
+    }
+  );
+  await handleResponse(response);
+  return response.json();
+}
+
+/**
  * Regenerate a presigned URL for an S3 key
  * Useful when stored URLs have expired
  */
-export async function regenerateImageUrl(s3Key: string, expirySeconds: number = 86400): Promise<string> {
+export interface RegenerateUrlResponse {
+  url: string;
+  expires_in_seconds: number;
+}
+
+export async function regenerateImageUrl(
+  s3Key: string,
+  expirySeconds: number = 86400
+): Promise<RegenerateUrlResponse> {
   const authHeaders = await getAuthHeaders();
   const response = await safeFetch(`${API_URL}/infographic/regenerate-url`, {
     method: 'POST',
@@ -1291,8 +1421,104 @@ export async function regenerateImageUrl(s3Key: string, expirySeconds: number = 
     }),
   });
   await handleResponse(response);
-  const data = await response.json();
-  return data.url;
+  return response.json();
+}
+
+/**
+ * Export infographic as Claude deck storyboard format
+ */
+export interface ClaudeDeckSlide {
+  slide_number: number;
+  title: string;
+  content_type: string;
+  main_text: string;
+  bullet_points: string[];
+  visual_suggestion: string;
+  speaker_notes: string;
+}
+
+export interface ClaudeDeckResponse {
+  deck_title: string;
+  deck_subtitle: string;
+  total_slides: number;
+  slides: ClaudeDeckSlide[];
+  theme_suggestion: string;
+  source_attribution: string;
+  generation_prompt: string;
+}
+
+export async function exportInfographicClaude(
+  request: {
+    infographic_id?: string;
+    request?: string;
+    topic?: string;
+    doc_type?: string;
+    slides_count?: number;
+  }
+): Promise<ClaudeDeckResponse> {
+  const authHeaders = await getAuthHeaders();
+  const response = await fetch(`${API_URL}/infographic/export/claude`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeaders,
+    },
+    body: JSON.stringify(request),
+  });
+  await handleResponse(response);
+  return response.json();
+}
+
+/**
+ * Export infographic as Gemini visual instruction schema
+ */
+export interface GeminiVisualElement {
+  element_type: string;
+  content: string;
+  position: Record<string, unknown>;
+  style: Record<string, unknown>;
+  priority: number;
+}
+
+export interface GeminiVisualResponse {
+  canvas_width: number;
+  canvas_height: number;
+  background_color: string;
+  color_palette: string[];
+  elements: GeminiVisualElement[];
+  layout_type: string;
+  generation_instructions: string;
+}
+
+export async function exportInfographicGemini(
+  request: {
+    infographic_id?: string;
+    request?: string;
+    topic?: string;
+    doc_type?: string;
+    slides_count?: number;
+  },
+  width: number = 1024,
+  height: number = 1024
+): Promise<GeminiVisualResponse> {
+  const authHeaders = await getAuthHeaders();
+  const params = new URLSearchParams();
+  params.append("width", width.toString());
+  params.append("height", height.toString());
+
+  const response = await fetch(
+    `${API_URL}/infographic/export/gemini?${params.toString()}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeaders,
+      },
+      body: JSON.stringify(request),
+    }
+  );
+  await handleResponse(response);
+  return response.json();
 }
 
 /**

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, FormEvent, KeyboardEvent } from 'react';
 import { generateUUID } from '@/utils/uuid';
+import CreateImageModal from './CreateImageModal';
 
 interface BeeBotInputProps {
   onSendMessage: (message: string, attachments?: { id: string; name: string; type: 'pdf' | 'docx' | 'txt' | 'other'; size?: number }[]) => void;
@@ -15,6 +16,7 @@ export default function BeeBotInput({
   const [message, setMessage] = useState('');
   const [isFocused, setIsFocused] = useState(false);
   const [attachments, setAttachments] = useState<{ id: string; name: string; type: 'pdf' | 'docx' | 'txt' | 'other'; size?: number }[]>([]);
+  const [isCreateImageOpen, setIsCreateImageOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -178,15 +180,16 @@ export default function BeeBotInput({
                 </svg>
                 Reasoning
               </button>
-              <button
-                type="button"
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                Create Image
-              </button>
+                      <button
+                        type="button"
+                        onClick={() => setIsCreateImageOpen(true)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        Create Image
+                      </button>
               <button
                 type="button"
                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
@@ -200,6 +203,13 @@ export default function BeeBotInput({
           </div>
         </form>
       </div>
+
+      {/* Create Image Modal */}
+      <CreateImageModal
+        isOpen={isCreateImageOpen}
+        onClose={() => setIsCreateImageOpen(false)}
+        initialRequest={message}
+      />
     </div>
   );
 }

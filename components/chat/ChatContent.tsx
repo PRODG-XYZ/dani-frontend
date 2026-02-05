@@ -9,6 +9,7 @@ import BeeBotInput from "@/components/chat/BeeBotInput";
 import ChatMessage from "@/components/chat/ChatMessage";
 import HistoryView from "@/components/chat/HistoryView";
 import LibraryView from "@/components/chat/LibraryView";
+import InfographicsView from "@/components/chat/InfographicsView";
 import ChatSkeleton from "@/components/chat/ChatSkeleton";
 import ConversationsSkeleton from "@/components/chat/ConversationsSkeleton";
 import UserManagementView from "@/components/ui/UserManagementView";
@@ -62,6 +63,7 @@ export default function ChatContent() {
   const [showHistory, setShowHistory] = useState(false);
   const [showUserManagement, setShowUserManagement] = useState(false);
   const [showLibrary, setShowLibrary] = useState(false);
+  const [showInfographics, setShowInfographics] = useState(false);
   // Tool state for agentic workflow (Phase 3)
   const [toolState, setToolState] = useState<{
     isActive: boolean;
@@ -1127,30 +1129,43 @@ export default function ChatContent() {
         showHistory={showHistory}
         showUserManagement={showUserManagement}
         showLibrary={showLibrary}
+        showInfographics={showInfographics}
         onNavigateToHistory={() => {
           setShowHistory(true);
           setShowUserManagement(false);
           setShowLibrary(false);
+          setShowInfographics(false);
         }}
         onNavigateToChat={() => {
           setShowHistory(false);
           setShowUserManagement(false);
           setShowLibrary(false);
+          setShowInfographics(false);
         }}
         onNavigateToUserManagement={() => {
           setShowHistory(false);
           setShowUserManagement(true);
           setShowLibrary(false);
+          setShowInfographics(false);
         }}
         onNavigateToLibrary={() => {
           setShowHistory(false);
           setShowUserManagement(false);
           setShowLibrary(true);
+          setShowInfographics(false);
+        }}
+        onNavigateToInfographics={() => {
+          setShowHistory(false);
+          setShowUserManagement(false);
+          setShowLibrary(false);
+          setShowInfographics(true);
         }}
         isLoadingConversations={isLoadingHistory}
         isLoadingAuth={isAuthLoading}
       >
-        {showLibrary ? (
+        {showInfographics ? (
+          <InfographicsView />
+        ) : showLibrary ? (
           <LibraryView />
         ) : showUserManagement ? (
           <UserManagementView />
