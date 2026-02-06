@@ -9,8 +9,9 @@ import { SendIcon, VoiceIcon } from '@/components/ui/Icons';
 import { 
   generateContent, 
   refineContent, 
+  getContentTypes,
   GhostwriteResponse,
-  ContentTypeValue,
+  ContentType,
   ToneValue,
   DocTypeFilter,
   getConversations,
@@ -18,8 +19,8 @@ import {
 } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
 
-// Content type options with icons
-const CONTENT_TYPES: { type: ContentTypeValue; label: string; icon: string }[] = [
+// Fallback content types when API fails
+const DEFAULT_CONTENT_TYPES: { type: string; label: string; icon: string }[] = [
   { type: 'linkedin_post', label: 'LinkedIn Post', icon: '💼' },
   { type: 'email', label: 'Email', icon: '📧' },
   { type: 'blog_draft', label: 'Blog Post', icon: '📝' },
@@ -27,6 +28,22 @@ const CONTENT_TYPES: { type: ContentTypeValue; label: string; icon: string }[] =
   { type: 'newsletter', label: 'Newsletter', icon: '📰' },
   { type: 'meeting_summary', label: 'Meeting Summary', icon: '📋' },
 ];
+
+function formatContentTypeLabel(type: string): string {
+  return type.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function iconForType(type: string): string {
+  const mapping: Record<string, string> = {
+    linkedin_post: '💼',
+    email: '📧',
+    blog_draft: '📝',
+    tweet_thread: '🐦',
+    newsletter: '📰',
+    meeting_summary: '📋',
+  };
+  return mapping[type] ?? '📄';
+}
 
 const TONE_OPTIONS: { value: ToneValue | ''; label: string }[] = [
   { value: '', label: 'Auto Tone' },
@@ -50,8 +67,12 @@ export default function GhostwriterPage() {
   // Conversations for sidebar
   const [conversations, setConversations] = useState<Conversation[]>([]);
   
+  // Content types from API
+  const [contentTypes, setContentTypes] = useState<{ type: string; label: string; icon: string }[]>(DEFAULT_CONTENT_TYPES);
+  const [contentTypesLoading, setContentTypesLoading] = useState(true);
+  
   // Form state
-  const [contentType, setContentType] = useState<ContentTypeValue>('linkedin_post');
+  const [contentType, setContentType] = useState<string>('linkedin_post');
   const [request, setRequest] = useState('');
   const [tone, setTone] = useState<ToneValue | undefined>(undefined);
   const [docType, setDocType] = useState<DocTypeFilter>('all');
@@ -94,6 +115,34 @@ export default function GhostwriterPage() {
     };
 
     loadConversations();
+  }, [isAuthenticated, isAuthLoading]);
+
+  // Load content types from API
+  useEffect(() => {
+    if (isAuthLoading || !isAuthenticated) return;
+
+    const loadContentTypes = async () => {
+      try {
+        setContentTypesLoading(true);
+        const types: ContentType[] = await getContentTypes();
+        if (types.length > 0) {
+          setContentTypes(
+            types.map((t) => ({
+              type: t.type,
+              label: formatContentTypeLabel(t.type),
+              icon: iconForType(t.type),
+            }))
+          );
+          setContentType((prev) => (types.some((t) => t.type === prev) ? prev : types[0].type));
+        }
+      } catch (err) {
+        console.error('Failed to load content types:', err);
+      } finally {
+        setContentTypesLoading(false);
+      }
+    };
+
+    loadContentTypes();
   }, [isAuthenticated, isAuthLoading]);
 
   const handleSelectConversation = useCallback((id: string) => {
@@ -143,11 +192,12 @@ export default function GhostwriterPage() {
         content_type: result.content_type,
       });
       
+      const totalMs = response.timing?.total_ms ?? result.timing?.total_ms ?? 0;
       setResult(prev => prev ? {
         ...prev,
         content: response.content,
         word_count: response.word_count,
-        timing: { ...prev.timing, total_ms: response.timing.total_ms },
+        timing: { ...prev.timing, total_ms: totalMs },
       } : null);
       
       setShowRefine(false);
@@ -178,17 +228,17 @@ export default function GhostwriterPage() {
     }
   };
 
-  const selectedTypeInfo = CONTENT_TYPES.find(t => t.type === contentType);
+  const selectedTypeInfo = contentTypes.find(t => t.type === contentType);
 
   // Convert ghostwriter sources to chat Source format for sidebar
-  const formattedSources = result?.sources.map((s: GhostwriteSource) => ({
-    title: s.title,
-    date: s.date ? new Date(s.date * 1000).toISOString() : null,
-    transcript_id: s.transcript_id,
+  const formattedSources = (result?.sources ?? []).map((s: GhostwriteSource) => ({
+    title: s.title ?? null,
+    date: s.date ? (typeof s.date === 'number' ? new Date(s.date * 1000).toISOString() : String(s.date)) : null,
+    transcript_id: s.transcript_id ?? null,
     speakers: [],
     text_preview: '',
-    relevance_score: s.relevance_score,
-  })) || [];
+    relevance_score: s.relevance_score ?? null,
+  }));
 
   return (
     <ProtectedRoute>
@@ -331,7 +381,7 @@ export default function GhostwriterPage() {
                         <div className="p-3 border-b border-[var(--border)]">
                           <p className="text-xs font-medium text-[var(--foreground-muted)] mb-2 uppercase tracking-wide">Content Type</p>
                           <div className="grid grid-cols-2 gap-1">
-                            {CONTENT_TYPES.map((type) => (
+                            {contentTypes.map((type) => (
                               <button
                                 key={type.type}
                                 onClick={() => {
@@ -495,8 +545,8 @@ export default function GhostwriterPage() {
 
                 {/* Footer */}
                 <div className="p-4 border-t border-[var(--border)] bg-[var(--background)] flex items-center justify-between text-xs text-[var(--foreground-muted)]">
-                  <span>Generated in {(result.timing.total_ms / 1000).toFixed(1)}s</span>
-                  <span>{result.sources.length} sources used</span>
+                  <span>Generated in {((result.timing?.total_ms ?? 0) / 1000).toFixed(1)}s</span>
+                  <span>{(result.sources?.length ?? 0)} sources used</span>
                 </div>
               </div>
 

@@ -1023,47 +1023,35 @@ export type ContentTypeValue =
 export type ToneValue = "formal" | "casual" | "urgent" | "inspirational";
 
 export interface ContentType {
-  type: ContentTypeValue;
+  type: string;
   description: string;
 }
 
 export interface GhostwriteRequest {
-  content_type: ContentTypeValue;
+  content_type: string;
   request: string;
   topic?: string;
   doc_type?: DocTypeFilter;
   additional_context?: string;
-  tone?: ToneValue;
+  tone?: string;
   max_length?: number;
 }
 
 export interface GhostwriteSource {
-  title: string;
-  date: number;
-  transcript_id: string;
-  relevance_score: number;
+  title?: string;
+  date?: string | number;
+  transcript_id?: string;
+  relevance_score?: number;
 }
 
 export interface GhostwriteResponse {
   content: string;
   content_type: string;
   word_count: number;
-  sources: GhostwriteSource[];
-  confidence: {
-    level: string;
-    metrics: Record<string, unknown>;
-  };
-  timing: {
-    retrieval_ms: number;
-    generation_ms: number;
-    total_ms: number;
-  };
-  metadata: {
-    topic: string;
-    doc_type_filter: string | null;
-    tone: string | null;
-    chunks_used: number;
-  };
+  sources?: GhostwriteSource[];
+  confidence?: Record<string, unknown>;
+  timing?: { retrieval_ms?: number; generation_ms?: number; total_ms?: number; [key: string]: unknown };
+  metadata?: Record<string, unknown>;
 }
 
 export interface RefineRequest {
@@ -1076,9 +1064,9 @@ export interface RefineResponse {
   content: string;
   content_type: string;
   word_count: number;
-  timing: { total_ms: number };
-  refined_from: string;
-  feedback_applied: string;
+  timing?: { total_ms?: number; [key: string]: unknown };
+  refined_from?: string;
+  feedback_applied?: string;
 }
 
 /**
@@ -1124,16 +1112,60 @@ export async function generateContent(
 export async function refineContent(request: RefineRequest): Promise<RefineResponse> {
   console.log('[API] refineContent:', request);
   const authHeaders = await getAuthHeaders();
-  
+
   const response = await fetch(`${API_URL}/ghostwriter/refine`, {
-    method: 'POST',
+    method: "POST",
     headers: {
       ...authHeaders,
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify(request),
   });
 
+  await handleResponse(response);
+  return response.json();
+}
+
+export interface GhostwriteLinkedInRequest {
+  request: string;
+  topic?: string;
+  tone?: string;
+}
+
+export interface GhostwriteEmailRequest {
+  request: string;
+  topic?: string;
+  tone?: string;
+}
+
+/**
+ * Quick endpoint to generate a LinkedIn post (shortcut for /generate with content_type=linkedin_post)
+ */
+export async function generateLinkedInPost(
+  body: GhostwriteLinkedInRequest
+): Promise<GhostwriteResponse> {
+  const authHeaders = await getAuthHeaders();
+  const response = await fetch(`${API_URL}/ghostwriter/linkedin`, {
+    method: "POST",
+    headers: { ...authHeaders, "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  await handleResponse(response);
+  return response.json();
+}
+
+/**
+ * Quick endpoint to generate an email draft (shortcut for /generate with content_type=email)
+ */
+export async function generateEmail(
+  body: GhostwriteEmailRequest
+): Promise<GhostwriteResponse> {
+  const authHeaders = await getAuthHeaders();
+  const response = await fetch(`${API_URL}/ghostwriter/email`, {
+    method: "POST",
+    headers: { ...authHeaders, "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
   await handleResponse(response);
   return response.json();
 }

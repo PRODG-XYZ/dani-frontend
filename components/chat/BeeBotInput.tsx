@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useRef, useEffect, FormEvent, KeyboardEvent } from 'react';
+import { useState, useRef, useEffect, useCallback, FormEvent, KeyboardEvent } from 'react';
 import { generateUUID } from '@/utils/uuid';
-import { getInfographicStyles } from '@/services/api';
+import { getInfographicStyles, getContentTypes } from '@/services/api';
 
 export interface ImageGenOptions {
   style: string;
@@ -11,30 +11,62 @@ export interface ImageGenOptions {
   height: number;
 }
 
+export interface GhostwriterOptions {
+  contentType: string;
+  docType: 'meeting' | 'email' | 'document' | 'note' | 'all';
+  tone?: string;
+}
+
 interface BeeBotInputProps {
   onSendMessage: (message: string, attachments?: { id: string; name: string; type: 'pdf' | 'docx' | 'txt' | 'other'; size?: number }[]) => void;
   onGenerateImage?: (request: string, options: ImageGenOptions) => void;
+  onGenerateGhostwriter?: (request: string, options: GhostwriterOptions) => void;
   disabled?: boolean;
 }
+
+const DEFAULT_CONTENT_TYPES = [
+  { type: 'linkedin_post', label: 'LinkedIn Post', icon: '💼' },
+  { type: 'email', label: 'Email', icon: '📧' },
+  { type: 'blog_draft', label: 'Blog Post', icon: '📝' },
+  { type: 'tweet_thread', label: 'Tweet Thread', icon: '🐦' },
+  { type: 'newsletter', label: 'Newsletter', icon: '📰' },
+  { type: 'meeting_summary', label: 'Meeting Summary', icon: '📋' },
+];
+
+const TONE_OPTIONS = [
+  { value: '', label: 'Auto' },
+  { value: 'formal', label: 'Formal' },
+  { value: 'casual', label: 'Casual' },
+  { value: 'urgent', label: 'Urgent' },
+  { value: 'inspirational', label: 'Inspirational' },
+];
 
 export default function BeeBotInput({
   onSendMessage,
   onGenerateImage,
+  onGenerateGhostwriter,
   disabled = false,
 }: BeeBotInputProps) {
   const [message, setMessage] = useState('');
   const [isFocused, setIsFocused] = useState(false);
   const [attachments, setAttachments] = useState<{ id: string; name: string; type: 'pdf' | 'docx' | 'txt' | 'other'; size?: number }[]>([]);
   const [isImageMode, setIsImageMode] = useState(false);
+  const [isGhostwriterMode, setIsGhostwriterMode] = useState(false);
   const [styles, setStyles] = useState<{ style: string; description: string }[]>([]);
   const [style, setStyle] = useState('');
+  const [contentTypes, setContentTypes] = useState<{ type: string; label: string; icon: string }[]>(DEFAULT_CONTENT_TYPES);
+  const [contentType, setContentType] = useState('linkedin_post');
+  const [ghostwriterDocType, setGhostwriterDocType] = useState<'meeting' | 'email' | 'document' | 'note' | 'all'>('all');
+  const [tone, setTone] = useState('');
   const [docType, setDocType] = useState<'meeting' | 'email' | 'document' | 'note' | 'all'>('all');
   const [width, setWidth] = useState(1024);
   const [height, setHeight] = useState(1024);
   const [showStyleDropdown, setShowStyleDropdown] = useState(false);
+  const [showContentTypeDropdown, setShowContentTypeDropdown] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const styleDropdownRef = useRef<HTMLDivElement>(null);
+  const contentTypeDropdownRef = useRef<HTMLDivElement>(null);
 
   const loadStyles = async () => {
     try {
@@ -46,14 +78,39 @@ export default function BeeBotInput({
     }
   };
 
+  const loadContentTypes = useCallback(async () => {
+    try {
+      const types = await getContentTypes();
+      if (types.length > 0) {
+        setContentTypes(
+          types.map((t) => ({
+            type: t.type,
+            label: t.type.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
+            icon: DEFAULT_CONTENT_TYPES.find((d) => d.type === t.type)?.icon ?? '📄',
+          }))
+        );
+        setContentType((prev) => (types.some((t) => t.type === prev) ? prev : types[0].type));
+      }
+    } catch (err) {
+      console.error('Failed to load content types:', err);
+    }
+  }, []);
+
   useEffect(() => {
     if (isImageMode && styles.length === 0) loadStyles();
   }, [isImageMode]);
 
   useEffect(() => {
+    if (isGhostwriterMode) loadContentTypes();
+  }, [isGhostwriterMode]);
+
+  useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (styleDropdownRef.current && !styleDropdownRef.current.contains(e.target as Node)) {
         setShowStyleDropdown(false);
+      }
+      if (contentTypeDropdownRef.current && !contentTypeDropdownRef.current.contains(e.target as Node)) {
+        setShowContentTypeDropdown(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -78,6 +135,9 @@ export default function BeeBotInput({
 
     if (isImageMode && onGenerateImage) {
       onGenerateImage(message.trim(), { style, docType, width, height });
+      setMessage('');
+    } else if (isGhostwriterMode && onGenerateGhostwriter) {
+      onGenerateGhostwriter(message.trim(), { contentType, docType: ghostwriterDocType, tone: tone || undefined });
       setMessage('');
     } else {
       onSendMessage(message.trim(), attachments.length > 0 ? attachments : undefined);
@@ -124,7 +184,11 @@ export default function BeeBotInput({
     }
   };
 
-  const canSubmit = message.trim() && !disabled && (!isImageMode || !!onGenerateImage);
+  const canSubmit =
+    message.trim() &&
+    !disabled &&
+    (!isImageMode || !!onGenerateImage) &&
+    (!isGhostwriterMode || !!onGenerateGhostwriter);
 
   return (
     <div className="px-8 py-6 bg-white">
@@ -136,8 +200,8 @@ export default function BeeBotInput({
               : 'border-gray-200'
           }`}>
             <div className="flex items-center gap-2 px-4 py-3">
-              {/* Attach Icon - hide in image mode */}
-              {!isImageMode && (
+              {/* Attach Icon - hide in image/ghostwriter mode */}
+              {!isImageMode && !isGhostwriterMode && (
                 <>
                   <button
                     type="button"
@@ -160,8 +224,8 @@ export default function BeeBotInput({
                 </>
               )}
 
-              {/* Wand Icon - only when not in image mode */}
-              {!isImageMode && (
+              {/* Wand Icon - only when not in image/ghostwriter mode */}
+              {!isImageMode && !isGhostwriterMode && (
                 <div className="text-[#FF8C00]">
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
@@ -209,6 +273,43 @@ export default function BeeBotInput({
                 </div>
               )}
 
+              {/* Content type dropdown - only in ghostwriter mode */}
+              {isGhostwriterMode && (
+                <div ref={contentTypeDropdownRef} className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setShowContentTypeDropdown((prev) => !prev)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#FF8C00] bg-[#FF8C00]/10 hover:bg-[#FF8C00]/20 rounded-lg transition-colors border border-[#FF8C00]/30"
+                  >
+                    <span>{contentTypes.find((c) => c.type === contentType)?.icon ?? '✍️'}</span>
+                    {contentTypes.find((c) => c.type === contentType)?.label ?? 'Type'}
+                    <svg className={`w-3 h-3 transition-transform ${showContentTypeDropdown ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  {showContentTypeDropdown && (
+                    <div className="absolute left-0 top-full mt-1 z-50 py-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto min-w-[180px]">
+                      {contentTypes.map((c) => (
+                        <button
+                          key={c.type}
+                          type="button"
+                          onClick={() => {
+                            setContentType(c.type);
+                            setShowContentTypeDropdown(false);
+                          }}
+                          className={`w-full text-left px-3 py-2 text-xs hover:bg-gray-100 transition-colors flex items-center gap-2 ${
+                            contentType === c.type ? 'bg-orange-50 text-[#FF8C00] font-medium' : 'text-gray-700'
+                          }`}
+                        >
+                          <span>{c.icon}</span>
+                          <span>{c.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
               <textarea
                 ref={textareaRef}
                 value={message}
@@ -216,7 +317,13 @@ export default function BeeBotInput({
                 onKeyDown={handleKeyDown}
                 onFocus={() => setIsFocused(true)}
                 onBlur={() => setIsFocused(false)}
-                placeholder={isImageMode ? 'Describe or edit an image' : 'Initiate a query or send a command to the AI...'}
+                placeholder={
+                  isImageMode
+                    ? 'Describe or edit an image'
+                    : isGhostwriterMode
+                      ? 'What do you want to write?'
+                      : 'Initiate a query or send a command to the AI...'
+                }
                 disabled={disabled}
                 rows={1}
                 className="flex-1 bg-transparent border-none outline-none resize-none text-gray-700 placeholder:text-gray-400 text-sm leading-6 max-h-[120px] focus:outline-none focus:ring-0 focus:border-none focus-visible:outline-none focus-visible:ring-0"
@@ -237,6 +344,40 @@ export default function BeeBotInput({
                 </svg>
               </button>
             </div>
+
+            {/* Ghostwriter mode: Source, Tone row */}
+            {isGhostwriterMode && (
+              <div className="flex flex-wrap items-center gap-3 px-4 pb-3 pt-1 border-t border-gray-200/60 mt-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-500">Source</span>
+                  <select
+                    value={ghostwriterDocType}
+                    onChange={(e) => setGhostwriterDocType(e.target.value as typeof ghostwriterDocType)}
+                    className="px-2.5 py-1.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:border-[#FF8C00] focus:ring-1 focus:ring-[#FF8C00]/30"
+                  >
+                    <option value="all">All Sources</option>
+                    <option value="meeting">Meetings</option>
+                    <option value="document">Documents</option>
+                    <option value="email">Emails</option>
+                    <option value="note">Notes</option>
+                  </select>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-500">Tone</span>
+                  <select
+                    value={tone}
+                    onChange={(e) => setTone(e.target.value)}
+                    className="px-2.5 py-1.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:border-[#FF8C00] focus:ring-1 focus:ring-[#FF8C00]/30"
+                  >
+                    {TONE_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            )}
 
             {/* Image mode: Source, Width, Height row */}
             {isImageMode && (
@@ -283,7 +424,7 @@ export default function BeeBotInput({
             )}
 
             {/* Attachments Preview */}
-            {!isImageMode && attachments.length > 0 && (
+            {!isImageMode && !isGhostwriterMode && attachments.length > 0 && (
               <div className="px-4 pb-2 flex flex-wrap gap-2">
                 {attachments.map(att => (
                   <div key={att.id} className="flex items-center gap-2 px-2 py-1 bg-gray-100 rounded-lg text-xs">
@@ -298,20 +439,33 @@ export default function BeeBotInput({
               </div>
             )}
 
-            {/* Action Buttons - always visible; Create Image toggles image mode */}
+            {/* Action Buttons - always visible; Ghostwriter and Create Image toggle modes */}
             <div className="flex items-center gap-2 px-4 pb-3 pt-1">
               <button
                 type="button"
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
+                onClick={() => {
+                  setIsGhostwriterMode((prev) => !prev);
+                  if (isGhostwriterMode) return;
+                  setIsImageMode(false);
+                }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+                  isGhostwriterMode
+                    ? 'bg-[#FF8C00]/20 text-[#FF8C00] border border-[#FF8C00]/50 hover:bg-[#FF8C00]/30'
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200'
+                }`}
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                 </svg>
-                Reasoning
+                Ghostwriter
               </button>
               <button
                 type="button"
-                onClick={() => setIsImageMode(prev => !prev)}
+                onClick={() => {
+                  setIsImageMode((prev) => !prev);
+                  if (isImageMode) return;
+                  setIsGhostwriterMode(false);
+                }}
                 className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
                   isImageMode
                     ? 'bg-[#FF8C00]/20 text-[#FF8C00] border border-[#FF8C00]/50 hover:bg-[#FF8C00]/30'
