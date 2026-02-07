@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { Message } from '@/types';
 import { CopyIcon, ThumbsUpIcon, ThumbsDownIcon } from '@/components/ui/Icons';
 import ToolResultBlock from '@/components/chat/ToolResultBlock';
@@ -123,7 +124,7 @@ export default function ChatMessage({ message, isLoading, isSelected, onSelectMe
               ) : (
                 message.content ? (
                   <div className={`prose prose-sm max-w-none break-words ${isUser ? 'text-gray-900' : 'text-gray-800'}`}>
-                    <ReactMarkdown>{message.content}</ReactMarkdown>
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
                   </div>
                 ) : null
               )}

@@ -874,3 +874,81 @@ textarea {
     padding: 0.875rem 1rem;
   }
 }
+
+/* ========================================
+   MARKDOWN TABLE STYLES
+   ======================================== */
+
+/* Tables in prose/markdown content */
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.875rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.prose thead {
+  background: rgba(59, 130, 246, 0.05);
+  border-bottom: 2px solid var(--border);
+}
+
+.prose th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: var(--foreground);
+  border-right: 1px solid var(--border);
+}
+
+.prose th:last-child {
+  border-right: none;
+}
+
+.prose td {
+  padding: 0.625rem 1rem;
+  border-top: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  color: var(--foreground-secondary);
+}
+
+.prose td:last-child {
+  border-right: none;
+}
+
+.prose tbody tr {
+  transition: background-color var(--transition-fast) ease;
+}
+
+.prose tbody tr:hover {
+  background: var(--surface-hover);
+}
+
+.prose tbody tr:nth-child(even) {
+  background: rgba(0, 0, 0, 0.015);
+}
+
+.dark .prose tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Make tables scrollable on mobile */
+.prose table {
+  display: block;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .prose table {
+    font-size: 0.8125rem;
+  }
+
+  .prose th,
+  .prose td {
+    padding: 0.5rem 0.75rem;
+  }
+}
