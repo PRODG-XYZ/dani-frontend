@@ -563,7 +563,8 @@ export default function ChatContent() {
       content,
       role: "user",
       timestamp: new Date(),
-      attachments,
+      // Strip 'file' property from attachments when storing (only keep metadata)
+      attachments: attachments?.map(({ id, name, type, size }) => ({ id, name, type, size })),
     };
 
     // Track if this is a new conversation - only 'new' counts as new
@@ -859,14 +860,14 @@ export default function ChatContent() {
     if (!userMsg || userMsg.role !== 'user') return;
     
     // Remove the assistant message and regenerate
-    setConversations(prev => prev.map(conv => 
-      conv.id === currentConversationId 
+    setConversations(prev => prev.map(conv =>
+      conv.id === currentConversationId
         ? { ...conv, messages: conv.messages.filter(m => m.id !== assistantMessageId) }
         : conv
     ));
-    
-    // Resend the user message
-    await handleSendMessage(userMsg.content, undefined, userMsg.attachments);
+
+    // Resend the user message 
+    await handleSendMessage(userMsg.content, undefined, undefined);
   };
 
   const handleEditMessage = async (messageId: string, newContent: string) => {
