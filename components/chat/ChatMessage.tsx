@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { Message } from '@/types';
 import { CopyIcon, ThumbsUpIcon, ThumbsDownIcon } from '@/components/ui/Icons';
 import ToolResultBlock from '@/components/chat/ToolResultBlock';
@@ -121,10 +122,43 @@ export default function ChatMessage({ message, isLoading, isSelected, onSelectMe
                 </div>
               ) : (
                 message.content ? (
-                  <div className={`whitespace-pre-wrap break-words text-sm leading-relaxed ${isUser ? 'text-gray-900' : 'text-gray-800'}`}>
-                    {message.content}
+                  <div className={`prose prose-sm max-w-none break-words ${isUser ? 'text-gray-900' : 'text-gray-800'}`}>
+                    <ReactMarkdown>{message.content}</ReactMarkdown>
                   </div>
                 ) : null
+              )}
+
+              {/* Show attachments for user messages */}
+              {isUser && message.attachments && message.attachments.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-gray-200">
+                  {message.attachments.map((attachment) => (
+                    <div
+                      key={attachment.id}
+                      className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs"
+                    >
+                      {/* File icon based on type */}
+                      <svg className="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                      </svg>
+
+                      {/* File name */}
+                      <span className="text-gray-700 font-medium max-w-[200px] truncate">
+                        {attachment.name}
+                      </span>
+
+                      {/* File size if available */}
+                      {attachment.size && (
+                        <span className="text-gray-400">
+                          {attachment.size < 1024
+                            ? `${attachment.size}B`
+                            : attachment.size < 1024 * 1024
+                            ? `${(attachment.size / 1024).toFixed(1)}KB`
+                            : `${(attachment.size / (1024 * 1024)).toFixed(1)}MB`}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
 

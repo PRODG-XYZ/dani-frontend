@@ -18,7 +18,7 @@ export interface GhostwriterOptions {
 }
 
 interface BeeBotInputProps {
-  onSendMessage: (message: string, attachments?: { id: string; name: string; type: 'pdf' | 'docx' | 'txt' | 'other'; size?: number }[]) => void;
+  onSendMessage: (message: string, attachments?: { id: string; name: string; type: 'pdf' | 'docx' | 'txt' | 'other'; size?: number; file: File }[]) => void;
   onGenerateImage?: (request: string, options: ImageGenOptions) => void;
   onGenerateGhostwriter?: (request: string, options: GhostwriterOptions) => void;
   disabled?: boolean;
@@ -83,7 +83,7 @@ export default function BeeBotInput({
 }: BeeBotInputProps) {
   const [message, setMessage] = useState('');
   const [isFocused, setIsFocused] = useState(false);
-  const [attachments, setAttachments] = useState<{ id: string; name: string; type: 'pdf' | 'docx' | 'txt' | 'other'; size?: number }[]>([]);
+  const [attachments, setAttachments] = useState<{ id: string; name: string; type: 'pdf' | 'docx' | 'txt' | 'other'; size?: number; file: File }[]>([]);
   const [isImageMode, setIsImageMode] = useState(false);
   const [isGhostwriterMode, setIsGhostwriterMode] = useState(false);
   const [styles, setStyles] = useState<{ style: string; description: string }[]>([]);
@@ -196,6 +196,7 @@ export default function BeeBotInput({
         name: file.name,
         type: fileType,
         size: file.size,
+        file: file,  // Store the actual File object
       };
     });
 

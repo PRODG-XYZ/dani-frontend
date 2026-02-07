@@ -79,14 +79,23 @@ export default function BeeBotHeader({
 
         {/* User Avatar */}
         {user?.picture_url ? (
-          <img 
-            src={user.picture_url} 
-            alt={user.name || 'User'} 
+          <img
+            src={user.picture_url}
+            alt={user.name || 'User'}
             className="w-9 h-9 rounded-full object-cover cursor-pointer"
           />
         ) : (
           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-orange-400 to-pink-400 flex items-center justify-center text-white text-sm font-semibold cursor-pointer">
-            {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+            {(() => {
+              if (user?.name?.trim()) {
+                const firstName = user.name.trim().split(/\s+/)[0];
+                if (firstName) return firstName.charAt(0).toUpperCase();
+              }
+              if (user?.email?.trim()) {
+                return user.email.charAt(0).toUpperCase();
+              }
+              return 'U';
+            })()}
           </div>
         )}
       </div>

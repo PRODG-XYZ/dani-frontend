@@ -766,9 +766,9 @@ export async function uploadDocument(
 
   const authHeaders = await getAuthHeaders();
   const formData = new FormData();
-  formData.append("file", file);
-  if (title) formData.append("title", title);
-  if (description) formData.append("description", description);
+  formData.append("files", file);  // Backend expects "files" not "file"
+  if (title) formData.append("titles", title);  // Backend expects "titles" array
+  if (description) formData.append("descriptions", description);  // Backend expects "descriptions" array
 
   // Use XMLHttpRequest for progress tracking
   return new Promise((resolve, reject) => {

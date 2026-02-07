@@ -40,6 +40,7 @@ import {
   editMessage,
   generateInfographic,
   generateContent,
+  uploadDocument,
   TimingData,
   ConfidenceData as ApiConfidenceData,
   ToolResultData,
@@ -535,9 +536,27 @@ export default function ChatContent() {
   const handleSendMessage = async (
     content: string,
     documentIds?: string[],
-    attachments?: { id: string; name: string; type: 'pdf' | 'docx' | 'txt' | 'other'; size?: number }[]
+    attachments?: { id: string; name: string; type: 'pdf' | 'docx' | 'txt' | 'other'; size?: number; file: File }[]
   ) => {
     const messageId = generateUUID();
+
+    // Upload attachments first and get document IDs
+    let uploadedDocumentIds: string[] = documentIds || [];
+    if (attachments && attachments.length > 0) {
+      console.log("[Chat] Uploading attachments:", attachments.length);
+      try {
+        for (const attachment of attachments) {
+          const response = await uploadDocument(attachment.file);
+          console.log("[Chat] Uploaded document:", response);
+          uploadedDocumentIds.push(response.id);  // Backend returns single document object with id
+        }
+        console.log("[Chat] All attachments uploaded. Document IDs:", uploadedDocumentIds);
+      } catch (error) {
+        console.error("[Chat] Failed to upload attachments:", error);
+        // Show error to user but continue with message
+        setError("Failed to upload some attachments, but sending message anyway");
+      }
+    }
 
     const newUserMessage: Message = {
       id: `msg-${messageId}`,
@@ -556,7 +575,7 @@ export default function ChatContent() {
       currentConversationId,
       isNewConversation,
       conversationsCount: conversations.length,
-      documentIdsCount: documentIds?.length,
+      documentIdsCount: uploadedDocumentIds.length,
       attachmentsCount: attachments?.length,
       attachments
     });
@@ -615,7 +634,7 @@ export default function ChatContent() {
         activeConversationId,
         docType,
         meetingCategory,
-        documentIds
+        uploadedDocumentIds.length > 0 ? uploadedDocumentIds : undefined
       );
       let fullContent = "";
       let backendConversationId: string | undefined;
