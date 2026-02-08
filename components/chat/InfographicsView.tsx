@@ -116,7 +116,7 @@ export default function InfographicsView() {
   const getStatusBadge = (status: string) => {
     const styles: Record<string, string> = {
       completed: 'bg-green-100 text-green-700 border-green-200',
-      processing: 'bg-blue-100 text-blue-700 border-blue-200',
+      generating: 'bg-blue-100 text-blue-700 border-blue-200',
       failed: 'bg-red-100 text-red-700 border-red-200',
       pending: 'bg-gray-100 text-gray-700 border-gray-200',
     };
@@ -171,7 +171,7 @@ export default function InfographicsView() {
             >
               <option value="all">All Status</option>
               <option value="completed">Completed</option>
-              <option value="processing">Processing</option>
+              <option value="generating">Generating</option>
               <option value="pending">Pending</option>
               <option value="failed">Failed</option>
             </select>
