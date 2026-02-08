@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, memo, useCallback } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { Source } from '@/types';
 import CategoryBadge from '@/components/ui/CategoryBadge';
 
@@ -234,9 +236,11 @@ function SourceDetailModal({ source, onClose }: { source: Source; onClose: () =>
           <div className="space-y-3">
             <h4 className="text-sm font-medium text-gray-600">Content</h4>
             <div className="p-4 rounded-lg bg-gray-50 border border-gray-200 max-h-96 overflow-y-auto">
-              <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
-                {source.text_preview || source.text || 'No content available'}
-              </p>
+              <div className="prose prose-sm max-w-none text-gray-700">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {source.text_preview || source.text || 'No content available'}
+                </ReactMarkdown>
+              </div>
             </div>
           </div>
 

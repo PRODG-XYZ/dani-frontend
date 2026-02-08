@@ -225,22 +225,22 @@ export default function BeeBotInput({
     (!isGhostwriterMode || !!onGenerateGhostwriter);
 
   return (
-    <div className="px-8 py-6 bg-white">
-      <div className="max-w-3xl mx-auto">
+    <div className="px-6 py-5 bg-gradient-to-t from-gray-50 to-white border-t border-gray-200">
+      <div className="max-w-4xl mx-auto">
         <form onSubmit={handleSubmit}>
-          <div className={`relative bg-[#F5F5F5] rounded-[20px] border shadow-sm transition-all ${
+          <div className={`relative bg-white rounded-2xl border-2 shadow-lg transition-all duration-200 ${
             isFocused
-              ? 'border-[#FF8C00] ring-2 ring-[#FF8C00]/20'
-              : 'border-gray-200'
+              ? 'border-[#FF8C00] ring-4 ring-[#FF8C00]/10 shadow-xl'
+              : 'border-gray-200 hover:border-gray-300 hover:shadow-xl'
           }`}>
-            <div className="flex items-center gap-2 px-4 py-3">
+            <div className="flex items-center gap-3 px-5 py-4">
               {/* Attach Icon - hide in image/ghostwriter mode */}
               {!isImageMode && !isGhostwriterMode && (
                 <>
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="text-gray-400 hover:text-gray-600 transition-colors p-1"
+                    className="text-gray-400 hover:text-orange-500 transition-all duration-200 p-2 rounded-lg hover:bg-orange-50"
                     title="Attach file"
                   >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -260,9 +260,9 @@ export default function BeeBotInput({
 
               {/* Wand Icon - only when not in image/ghostwriter mode */}
               {!isImageMode && !isGhostwriterMode && (
-                <div className="text-[#FF8C00]">
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                <div className="text-[#FF8C00] p-2 rounded-lg bg-orange-50/50">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
                   </svg>
                 </div>
               )}
@@ -365,28 +365,28 @@ export default function BeeBotInput({
                 onBlur={() => setIsFocused(false)}
                 placeholder={
                   isImageMode
-                    ? 'Describe or edit an image'
+                    ? 'Describe or edit an image...'
                     : isGhostwriterMode
                       ? 'What do you want to write?'
-                      : 'Initiate a query or send a command to the AI...'
+                      : 'Ask me anything or send a command...'
                 }
                 disabled={disabled}
                 rows={1}
-                className="flex-1 bg-transparent border-none outline-none resize-none text-gray-700 placeholder:text-gray-400 text-sm leading-6 max-h-[120px] focus:outline-none focus:ring-0 focus:border-none focus-visible:outline-none focus-visible:ring-0"
+                className="flex-1 bg-transparent border-none outline-none resize-none text-gray-800 placeholder:text-gray-400 text-[15px] leading-7 max-h-[120px] focus:outline-none focus:ring-0 focus:border-none focus-visible:outline-none focus-visible:ring-0"
                 style={{ outline: 'none', boxShadow: 'none' }}
               />
 
               <button
                 type="submit"
                 disabled={!canSubmit}
-                className={`p-2 rounded-xl transition-all ${
+                className={`p-2.5 rounded-xl transition-all duration-200 ${
                   canSubmit
-                    ? 'bg-gradient-to-r from-[#FF8C00] to-[#FF6B35] text-white shadow-lg hover:shadow-xl'
-                    : 'bg-gray-300 text-gray-400 cursor-not-allowed'
+                    ? 'bg-gradient-to-r from-[#FF8C00] to-[#FF6B35] text-white shadow-lg hover:shadow-xl hover:scale-105 active:scale-95'
+                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                 }`}
               >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
                 </svg>
               </button>
             </div>
@@ -471,13 +471,13 @@ export default function BeeBotInput({
 
             {/* Attachments Preview */}
             {!isImageMode && !isGhostwriterMode && attachments.length > 0 && (
-              <div className="px-4 pb-2 flex flex-wrap gap-2">
+              <div className="px-5 pb-3 flex flex-wrap gap-2">
                 {attachments.map(att => (
-                  <div key={att.id} className="flex items-center gap-2 px-2 py-1 bg-gray-100 rounded-lg text-xs">
-                    <span className="text-gray-700">{att.name}</span>
-                    <button type="button" onClick={() => removeAttachment(att.id)} className="text-gray-400 hover:text-gray-600">
-                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <div key={att.id} className="flex items-center gap-2 px-3 py-2 bg-gradient-to-br from-orange-50 to-amber-50 border border-orange-200 rounded-lg text-xs shadow-sm hover:shadow-md transition-all">
+                    <span className="text-gray-700 font-medium">{att.name}</span>
+                    <button type="button" onClick={() => removeAttachment(att.id)} className="text-gray-400 hover:text-red-500 transition-colors p-0.5 rounded hover:bg-white/50">
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                       </svg>
                     </button>
                   </div>
@@ -486,7 +486,7 @@ export default function BeeBotInput({
             )}
 
             {/* Action Buttons - always visible; Ghostwriter and Create Image toggle modes */}
-            <div className="flex items-center gap-2 px-4 pb-3 pt-1">
+            <div className="flex items-center gap-2 px-5 pb-4 pt-2 border-t border-gray-100">
               <button
                 type="button"
                 onClick={() => {
@@ -494,14 +494,14 @@ export default function BeeBotInput({
                   if (isGhostwriterMode) return;
                   setIsImageMode(false);
                 }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+                className={`flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-lg transition-all duration-200 ${
                   isGhostwriterMode
-                    ? 'bg-[#FF8C00]/20 text-[#FF8C00] border border-[#FF8C00]/50 hover:bg-[#FF8C00]/30'
-                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200'
+                    ? 'bg-gradient-to-r from-[#FF8C00]/20 to-orange-100/50 text-[#FF8C00] border border-[#FF8C00]/50 shadow-sm hover:shadow-md'
+                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100 border border-transparent hover:border-gray-200 hover:shadow-sm'
                 }`}
               >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                 </svg>
                 Ghostwriter
               </button>
@@ -512,24 +512,24 @@ export default function BeeBotInput({
                   if (isImageMode) return;
                   setIsGhostwriterMode(false);
                 }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+                className={`flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-lg transition-all duration-200 ${
                   isImageMode
-                    ? 'bg-[#FF8C00]/20 text-[#FF8C00] border border-[#FF8C00]/50 hover:bg-[#FF8C00]/30'
-                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200'
+                    ? 'bg-gradient-to-r from-[#FF8C00]/20 to-orange-100/50 text-[#FF8C00] border border-[#FF8C00]/50 shadow-sm hover:shadow-md'
+                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100 border border-transparent hover:border-gray-200 hover:shadow-sm'
                 }`}
               >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 Create Image
               </button>
               <button
                 type="button"
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
+                className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-all duration-200 border border-transparent hover:border-gray-200 hover:shadow-sm"
                 title="Help"
               >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 Help
               </button>

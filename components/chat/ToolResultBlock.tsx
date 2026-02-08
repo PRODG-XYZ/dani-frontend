@@ -1,6 +1,8 @@
 "use client";
 
 import React from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { CopyIcon, ChevronDownIcon } from "@/components/ui/Icons";
 import { ToolResultData, regenerateImageUrl } from "@/services/api";
 
@@ -376,8 +378,8 @@ export function ToolResultBlock({ toolName, data }: ToolResultBlockProps) {
 
         {/* Content */}
         <div className="p-4">
-          <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap">
-            {data.content}
+          <div className="prose prose-sm dark:prose-invert max-w-none">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{data.content}</ReactMarkdown>
           </div>
         </div>
 

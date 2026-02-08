@@ -193,7 +193,8 @@ export async function sendChatMessage(
   conversationId?: string,
   docType?: "meeting" | "email" | "document" | "note" | "all",
   meetingCategory?: MeetingCategory,
-  documentIds?: string[]
+  documentIds?: string[],
+  attachments?: { id: string; name: string; type: string; size?: number }[]
 ): Promise<Response> {
   console.log("[API] sendChatMessage:", {
     query: query.slice(0, 50),
@@ -202,7 +203,14 @@ export async function sendChatMessage(
     docType,
     meetingCategory,
     documentIds,
+    attachments,
+    attachmentsCount: attachments?.length || 0,
   });
+
+  if (attachments && attachments.length > 0) {
+    console.log("[API] ✅ Sending attachments to backend:", JSON.stringify(attachments, null, 2));
+  }
+
   const authHeaders = await getAuthHeaders();
   const requestBody = {
     query,
@@ -215,8 +223,10 @@ export async function sendChatMessage(
         ? meetingCategory
         : undefined,
     document_ids: documentIds && documentIds.length > 0 ? documentIds : undefined,
+    attachments: attachments && attachments.length > 0 ? attachments : undefined,
   } as ChatRequest;
-  // console.log("[API] Request body:", requestBody);
+
+  console.log("[API] Full request body:", JSON.stringify(requestBody, null, 2));
 
   const response = await fetch(`${API_URL}/chat`, {
     method: "POST",
