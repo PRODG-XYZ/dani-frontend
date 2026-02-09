@@ -1385,6 +1385,7 @@ export default function ChatContent() {
           setShowInfographics(false);
         }}
         onNewConversation={handleNewConversation}
+        onDeleteConversation={handleDeleteConversation}
         user={user}
         sources={sources}
         showHistory={showHistory}
@@ -1443,6 +1444,7 @@ export default function ChatContent() {
               handleNewConversation();
               setShowHistory(false);
             }}
+            onDeleteConversation={handleDeleteConversation}
           />
         ) : (
           <div className="relative flex-1 flex flex-col overflow-hidden bg-white">

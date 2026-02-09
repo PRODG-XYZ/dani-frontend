@@ -12,6 +12,7 @@ interface BeeBotLayoutProps {
   currentConversationId: string;
   onSelectConversation: (id: string) => void;
   onNewConversation: () => void;
+  onDeleteConversation?: (id: string) => void;
   user: AuthUser | null;
   sources?: Source[];
   showHistory?: boolean;
@@ -35,6 +36,7 @@ export default function BeeBotLayout({
   currentConversationId,
   onSelectConversation,
   onNewConversation,
+  onDeleteConversation,
   user,
   sources = [],
   showHistory = false,
@@ -72,6 +74,7 @@ export default function BeeBotLayout({
         conversations={conversations}
         currentConversationId={currentConversationId}
         onSelectConversation={onSelectConversation}
+        onDeleteConversation={onDeleteConversation}
         user={user}
         onNavigateToHistory={onNavigateToHistory}
         onNavigateToChat={onNavigateToChat}

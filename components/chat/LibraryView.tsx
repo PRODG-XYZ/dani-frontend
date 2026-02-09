@@ -1,7 +1,19 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { listDocuments, deleteDocument, updateDocument, getDocumentDownloadUrl, DocumentResponse, DocumentStatus, DocumentType } from '@/services/api';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import {
+  listDocuments,
+  deleteDocument,
+  updateDocument,
+  getDocumentDownloadUrl,
+  uploadDocument,
+  waitForDocumentReady,
+  DocumentResponse,
+  DocumentStatus,
+  DocumentType,
+  ApiError,
+} from '@/services/api';
+import FilePreviewModal from '@/components/chat/FilePreviewModal';
 
 export default function LibraryView() {
   const [documents, setDocuments] = useState<DocumentResponse[]>([]);
@@ -19,6 +31,14 @@ export default function LibraryView() {
   const [editingDocId, setEditingDocId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editDescription, setEditDescription] = useState('');
+
+  // Preview state
+  const [previewDoc, setPreviewDoc] = useState<{ id: string; filename: string; fileType: 'pdf' | 'docx' | 'txt' } | null>(null);
+
+  // Upload state
+  const [uploadingFiles, setUploadingFiles] = useState<{ id: string; file: File; progress: number; status: 'uploading' | 'processing' | 'completed' | 'failed'; error?: string }[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchDocuments = useCallback(async () => {
     try {
@@ -92,6 +112,40 @@ export default function LibraryView() {
       console.error('Failed to download document:', err);
       alert('Failed to download document. Please try again.');
     }
+  };
+
+  const getPreviewFileType = (doc: DocumentResponse): 'pdf' | 'docx' | 'txt' => {
+    const t = doc.file_type;
+    return t === 'pdf' || t === 'docx' || t === 'txt' ? t : 'txt';
+  };
+
+  const handleFiles = useCallback((files: FileList | File[]) => {
+    Array.from(files).forEach(async (file) => {
+      const id = `upload-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+      setUploadingFiles(prev => [...prev, { id, file, progress: 0, status: 'uploading' }]);
+
+      try {
+        const response = await uploadDocument(file, undefined, undefined, (progress) => {
+          setUploadingFiles(prev => prev.map(f => f.id === id ? { ...f, progress } : f));
+        });
+        setUploadingFiles(prev => prev.map(f => f.id === id ? { ...f, status: 'processing', progress: 100 } : f));
+
+        const finalDoc = await waitForDocumentReady(response.id);
+        if (finalDoc.status === 'completed') {
+          setUploadingFiles(prev => prev.map(f => f.id === id ? { ...f, status: 'completed' } : f));
+        } else {
+          setUploadingFiles(prev => prev.map(f => f.id === id ? { ...f, status: 'failed', error: finalDoc.error_message || 'Processing failed' } : f));
+        }
+        fetchDocuments();
+      } catch (err) {
+        const msg = err instanceof ApiError ? err.message : 'Upload failed';
+        setUploadingFiles(prev => prev.map(f => f.id === id ? { ...f, status: 'failed', error: msg } : f));
+      }
+    });
+  }, [fetchDocuments]);
+
+  const removeUpload = (fileId: string) => {
+    setUploadingFiles(prev => prev.filter(f => f.id !== fileId));
   };
 
   const formatFileSize = (bytes: number): string => {
@@ -203,11 +257,88 @@ export default function LibraryView() {
           </div>
 
           {/* Document Count */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-4">
             <p className="text-sm text-gray-600">
               {total} {total === 1 ? 'document' : 'documents'}
             </p>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium flex items-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+              </svg>
+              Upload Documents
+            </button>
           </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            className="hidden"
+            accept=".pdf,.doc,.docx,.txt,.md"
+            onChange={(e) => {
+              if (e.target.files?.length) {
+                handleFiles(e.target.files);
+                e.target.value = '';
+              }
+            }}
+          />
+
+          {/* Upload Zone - drag and drop */}
+          <div
+            onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+            onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
+            onDrop={(e) => {
+              e.preventDefault();
+              setIsDragging(false);
+              if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files);
+            }}
+            onClick={() => fileInputRef.current?.click()}
+            className={`border-2 border-dashed rounded-xl p-6 cursor-pointer transition-all mb-4 ${
+              isDragging ? 'border-[#FF8C00] bg-orange-50' : 'border-gray-200 hover:border-[#FF8C00]/50 hover:bg-gray-50'
+            }`}
+          >
+            <div className="text-center">
+              <p className="text-sm text-gray-600">
+                Drop files here or click to upload • PDF, DOCX, TXT
+              </p>
+            </div>
+          </div>
+
+          {/* Upload Progress */}
+          {uploadingFiles.length > 0 && (
+            <div className="space-y-2 mb-4">
+              {uploadingFiles.map((upload) => (
+                <div key={upload.id} className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 border border-gray-200">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">{upload.file.name}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      {upload.status === 'uploading' && (
+                        <>
+                          <div className="flex-1 max-w-[120px] h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                            <div className="h-full bg-[#FF8C00] transition-all" style={{ width: `${upload.progress}%` }} />
+                          </div>
+                          <span className="text-xs text-gray-500">{upload.progress}%</span>
+                        </>
+                      )}
+                      {upload.status === 'processing' && <span className="text-xs text-blue-500">Processing...</span>}
+                      {upload.status === 'completed' && <span className="text-xs text-green-600">✓ Done</span>}
+                      {upload.status === 'failed' && <span className="text-xs text-red-500">{upload.error}</span>}
+                    </div>
+                  </div>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); removeUpload(upload.id); }}
+                    className="p-1.5 rounded-lg hover:bg-gray-200 text-gray-500"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -269,7 +400,10 @@ export default function LibraryView() {
                         </div>
                       ) : (
                         <>
-                          <h3 className="text-sm font-semibold text-gray-900 truncate mb-1 group-hover:text-[#FF8C00] transition-colors">
+                          <h3
+                            className="text-sm font-semibold text-gray-900 truncate mb-1 group-hover:text-[#FF8C00] transition-colors cursor-pointer"
+                            onClick={() => setPreviewDoc({ id: doc.id, filename: doc.filename, fileType: getPreviewFileType(doc) })}
+                          >
                             {doc.title || doc.filename}
                           </h3>
                           {doc.description && (
@@ -306,6 +440,16 @@ export default function LibraryView() {
                         </>
                       ) : (
                         <>
+                          <button
+                            onClick={() => setPreviewDoc({ id: doc.id, filename: doc.filename, fileType: getPreviewFileType(doc) })}
+                            className="p-2 text-gray-400 hover:text-[#FF8C00] hover:bg-gray-100 rounded-lg transition-colors"
+                            title="View"
+                          >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                          </button>
                           <button
                             onClick={() => handleDownload(doc)}
                             className="p-2 text-gray-400 hover:text-[#FF8C00] hover:bg-gray-100 rounded-lg transition-colors"
@@ -366,6 +510,17 @@ export default function LibraryView() {
           )}
         </div>
       </div>
+
+      {/* File Preview Modal */}
+      {previewDoc && (
+        <FilePreviewModal
+          isOpen={true}
+          onClose={() => setPreviewDoc(null)}
+          documentId={previewDoc.id}
+          filename={previewDoc.filename}
+          fileType={previewDoc.fileType}
+        />
+      )}
     </div>
   );
 }

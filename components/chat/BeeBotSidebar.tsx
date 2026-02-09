@@ -5,11 +5,13 @@ import { useRouter } from 'next/navigation';
 import { Conversation, AuthUser } from '@/types';
 import BeeBotUserMenu from './BeeBotUserMenu';
 import ConversationsSkeleton from './ConversationsSkeleton';
+import DeleteConfirmModal from '@/components/ui/DeleteConfirmModal';
 
 interface BeeBotSidebarProps {
   conversations: Conversation[];
   currentConversationId: string;
   onSelectConversation: (id: string) => void;
+  onDeleteConversation?: (id: string) => void;
   user: AuthUser | null;
   onNavigateToHistory?: () => void;
   onNavigateToChat?: () => void;
@@ -24,6 +26,7 @@ export default function BeeBotSidebar({
   conversations,
   currentConversationId,
   onSelectConversation,
+  onDeleteConversation,
   user,
   onNavigateToHistory,
   onNavigateToChat,
@@ -39,6 +42,7 @@ export default function BeeBotSidebar({
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   // Get most recent 10 conversations, sorted by updatedAt
   const recentConversations = [...conversations]
@@ -229,15 +233,33 @@ export default function BeeBotSidebar({
             ) : recentConversations.length > 0 ? (
               <div className="space-y-0.5">
                 {recentConversations.map(conv => (
-                  <button
+                  <div
                     key={conv.id}
-                    onClick={() => onSelectConversation(conv.id)}
-                    className={`w-full text-left px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 transition-colors ${
+                    className={`group flex items-center gap-1 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 transition-colors ${
                       currentConversationId === conv.id ? 'bg-gray-200' : ''
                     }`}
                   >
-                    <div className="truncate">{conv.title}</div>
-                  </button>
+                    <button
+                      onClick={() => onSelectConversation(conv.id)}
+                      className="flex-1 text-left min-w-0 truncate"
+                    >
+                      {conv.title}
+                    </button>
+                    {onDeleteConversation && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDeleteConfirmId(conv.id);
+                        }}
+                        className="p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-gray-200 text-gray-400 hover:text-red-500 transition-all flex-shrink-0"
+                        title="Delete"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
                 ))}
               </div>
             ) : null}
@@ -321,40 +343,45 @@ export default function BeeBotSidebar({
       {/* Search Modal */}
       {isSearchOpen && (
         <div 
-          className="fixed inset-0 z-50 flex items-start justify-center pt-20 bg-black/40 backdrop-blur-sm animate-fade-in" 
+          className="fixed inset-0 z-50 flex items-start justify-center pt-24 px-4 bg-black/50 backdrop-blur-md animate-fade-in" 
           onClick={() => {
             setIsSearchOpen(false);
             setSearchQuery('');
           }}
         >
           <div 
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-xl mx-4 overflow-hidden animate-scale-in" 
+            className="w-full max-w-xl bg-white rounded-2xl shadow-2xl ring-1 ring-black/5 overflow-hidden animate-scale-in" 
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center gap-3 p-4 border-b border-gray-200">
-              <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
+            {/* Search input area */}
+            <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100">
+              <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center">
+                <svg className="w-5 h-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search conversations..."
                 autoFocus
-                className="flex-1 bg-transparent border-none focus:outline-none text-gray-900 placeholder:text-gray-400 text-lg"
+                className="flex-1 bg-transparent border-none focus:outline-none text-gray-900 placeholder:text-gray-400 text-base font-medium"
               />
               <button
                 onClick={() => {
                   setIsSearchOpen(false);
                   setSearchQuery('');
                 }}
-                className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-200 rounded-xl text-gray-500 hover:text-gray-700 transition-colors"
+                title="Close"
               >
-                <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
+            {/* Results */}
             <div className="max-h-80 overflow-y-auto p-2">
               {conversations
                 .filter((conv) =>
@@ -368,34 +395,58 @@ export default function BeeBotSidebar({
                       setIsSearchOpen(false);
                       setSearchQuery('');
                     }}
-                    className="w-full text-left p-3 rounded-xl hover:bg-gray-100 transition-colors"
+                    className="w-full text-left p-3 rounded-xl hover:bg-orange-50/80 transition-colors group"
                   >
                     <div className="flex items-center gap-3">
-                      <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                      </svg>
+                      <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-gray-100 group-hover:bg-orange-100 flex items-center justify-center transition-colors">
+                        <svg className="w-4 h-4 text-gray-500 group-hover:text-orange-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                      </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">
+                        <p className="text-sm font-medium text-gray-900 truncate group-hover:text-[#FF8C00] transition-colors">
                           {conversation.title}
                         </p>
-                        <p className="text-xs text-gray-400">
-                          {new Date(conversation.updatedAt).toLocaleDateString()}
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          {new Date(conversation.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                         </p>
                       </div>
+                      <svg className="w-4 h-4 text-gray-300 group-hover:text-orange-400 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
                     </div>
                   </button>
                 ))}
               {searchQuery && conversations.filter((conv) =>
                 conv.title.toLowerCase().includes(searchQuery.toLowerCase())
               ).length === 0 && (
-                <p className="text-center text-gray-400 py-8">
-                  No conversations found
-                </p>
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center mb-3">
+                    <svg className="w-7 h-7 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <p className="text-sm font-medium text-gray-600">No conversations found</p>
+                  <p className="text-xs text-gray-400 mt-1">Try a different search term</p>
+                </div>
               )}
             </div>
           </div>
         </div>
       )}
+
+      <DeleteConfirmModal
+        isOpen={!!deleteConfirmId}
+        onClose={() => setDeleteConfirmId(null)}
+        onConfirm={() => {
+          if (deleteConfirmId && onDeleteConversation) {
+            onDeleteConversation(deleteConfirmId);
+            setDeleteConfirmId(null);
+          }
+        }}
+        title="Delete conversation"
+        message="Are you sure you want to delete this chat? This action cannot be undone."
+      />
     </div>
   );
 }

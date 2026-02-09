@@ -1309,21 +1309,32 @@ export async function getInfographic(id: string): Promise<InfographicResponse> {
 }
 
 /**
- * Get download URL
+ * Get download URL (legacy - opens in new tab, may not trigger download)
  */
 export async function getInfographicDownloadUrl(id: string): Promise<string> {
-  const authHeaders = await getAuthHeaders();
-  // Note: Backend endpoint redirects to S3 URL, so we might follow it or just return the endpoint URL
-  // if the frontend handles the redirect.
-  // Actually, the backend /download endpoint returns a redirect.
-  // To get the URL without following it immediately, we might need a different approach or
-  // just let the browser handle the link.
-
-  // Alternative: The backend logic for /download returns RedirectResponse.
-  // If we fetch it, we get the image content or the redirect.
-
-  // Let's assume we use the direct link in an <a> tag pointing to the backend which redirects.
   return `${API_URL}/infographic/${id}/download`;
+}
+
+/**
+ * Download infographic as file (fetches blob and triggers download so browser doesn't just redirect)
+ */
+export async function downloadInfographic(id: string, filename = "infographic.png"): Promise<void> {
+  const authHeaders = await getAuthHeaders();
+  const response = await fetch(`${API_URL}/infographic/${id}/download`, {
+    method: "GET",
+    headers: authHeaders,
+    credentials: "include",
+  });
+  await handleResponse(response);
+  const blob = await response.blob();
+  const blobUrl = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = blobUrl;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(blobUrl);
 }
 
 /**

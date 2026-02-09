@@ -3,11 +3,13 @@
 import { useState } from 'react';
 import { Conversation } from '@/types';
 import { downloadConversation } from '@/services/api';
+import DeleteConfirmModal from '@/components/ui/DeleteConfirmModal';
 
 interface HistoryViewProps {
   conversations: Conversation[];
   onSelectConversation: (id: string) => void;
   onNewConversation: () => void;
+  onDeleteConversation?: (id: string) => void;
 }
 
 const handleExportConversation = async (e: React.MouseEvent, conversationId: string) => {
@@ -20,8 +22,9 @@ const handleExportConversation = async (e: React.MouseEvent, conversationId: str
   }
 };
 
-export default function HistoryView({ conversations, onSelectConversation, onNewConversation }: HistoryViewProps) {
+export default function HistoryView({ conversations, onSelectConversation, onNewConversation, onDeleteConversation }: HistoryViewProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   // Format date for display
   const formatDate = (date: Date) => {
@@ -135,12 +138,39 @@ export default function HistoryView({ conversations, onSelectConversation, onNew
                       <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
                     </svg>
                   </button>
+                  {onDeleteConversation && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteConfirmId(conversation.id);
+                      }}
+                      className="p-2 text-gray-400 opacity-0 group-hover:opacity-100 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all flex-shrink-0"
+                      title="Delete conversation"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
           )}
         </div>
       </div>
+
+      <DeleteConfirmModal
+        isOpen={!!deleteConfirmId}
+        onClose={() => setDeleteConfirmId(null)}
+        onConfirm={() => {
+          if (deleteConfirmId && onDeleteConversation) {
+            onDeleteConversation(deleteConfirmId);
+            setDeleteConfirmId(null);
+          }
+        }}
+        title="Delete conversation"
+        message="Are you sure you want to delete this chat? This action cannot be undone."
+      />
     </div>
   );
 }

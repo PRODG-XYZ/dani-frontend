@@ -1,6 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
+import InfographicLightbox from "@/components/ui/InfographicLightbox";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { CopyIcon, ChevronDownIcon } from "@/components/ui/Icons";
@@ -38,11 +39,13 @@ function extractS3KeyFromUrl(url: string): string | null {
 function InfographicImage({ 
   imageUrl, 
   imageBase64, 
-  s3Key 
+  s3Key,
+  onImageClick,
 }: { 
   imageUrl?: string; 
   imageBase64?: string;
   s3Key?: string;
+  onImageClick?: (src: string) => void;
 }) {
   const [currentUrl, setCurrentUrl] = React.useState<string | null>(imageUrl || null);
   const [useBase64, setUseBase64] = React.useState(false);
@@ -145,7 +148,8 @@ function InfographicImage({
     <img
       src={src}
       alt="Generated Infographic"
-      className="w-full h-auto object-contain max-h-[500px]"
+      className={`w-full h-auto object-contain max-h-[500px] ${onImageClick ? 'cursor-zoom-in' : ''}`}
+      onClick={() => onImageClick?.(src)}
       onError={() => {
         console.log('[ToolResultBlock] Image load error. useBase64:', useBase64, 'hasS3Key:', !!effectiveS3Key, 'hasTriedRegeneration:', hasTriedRegeneration.current);
         
@@ -201,6 +205,8 @@ const CheckIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
 export function ToolResultBlock({ toolName, data }: ToolResultBlockProps) {
   const [isExpanded, setIsExpanded] = React.useState(true);
   const [copied, setCopied] = React.useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxSrc, setLightboxSrc] = useState<string>("");
 
   // Debug logging
   React.useEffect(() => {
@@ -226,6 +232,7 @@ export function ToolResultBlock({ toolName, data }: ToolResultBlockProps) {
     const { headline, subtitle, stats, key_points } = data.structured_data;
 
     return (
+      <>
       <div className="my-3 rounded-xl border-2 border-amber-200/80 bg-gradient-to-br from-amber-50/90 via-white to-orange-50/80 overflow-hidden shadow-md transition-all duration-200">
         {/* Header */}
         <div 
@@ -253,12 +260,16 @@ export function ToolResultBlock({ toolName, data }: ToolResultBlockProps) {
         {isExpanded && (
           <div className="pb-4">
              {/* Image (Moved to top, full width) */}
-            {(data.image || data.image_url || data.s3_key) && (
+             {(data.image || data.image_url || data.s3_key) && (
               <div className="relative group border-b border-amber-200/60 mb-4 bg-amber-50/30">
                 <InfographicImage 
                   imageUrl={data.image_url} 
                   imageBase64={data.image} 
                   s3Key={data.s3_key}
+                  onImageClick={(src) => {
+                    setLightboxSrc(src);
+                    setLightboxOpen(true);
+                  }}
                 />
                 <button
                   onClick={(e) => {
@@ -343,6 +354,13 @@ export function ToolResultBlock({ toolName, data }: ToolResultBlockProps) {
           </div>
         )}
       </div>
+      <InfographicLightbox
+        isOpen={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+        imageSrc={lightboxSrc}
+        alt={headline || "Infographic"}
+      />
+    </>
     );
   }
 

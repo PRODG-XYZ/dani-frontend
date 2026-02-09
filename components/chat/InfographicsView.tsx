@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { listInfographics, deleteInfographic, getInfographicDownloadUrl, regenerateImageUrl, InfographicListItem } from '@/services/api';
+import { listInfographics, deleteInfographic, downloadInfographic, regenerateImageUrl, InfographicListItem } from '@/services/api';
+import InfographicLightbox from '@/components/ui/InfographicLightbox';
 
 export default function InfographicsView() {
   const [infographics, setInfographics] = useState<InfographicListItem[]>([]);
@@ -48,13 +49,23 @@ export default function InfographicsView() {
   };
 
   const handleDownload = async (infographicId: string) => {
-    const url = await getInfographicDownloadUrl(infographicId);
-    window.open(url, '_blank');
+    try {
+      const infographic = infographics.find((i) => i.id === infographicId);
+      const filename = infographic?.headline
+        ? `${infographic.headline.replace(/[^a-z0-9]/gi, "_").slice(0, 50)}.png`
+        : "infographic.png";
+      await downloadInfographic(infographicId, filename);
+    } catch (err) {
+      console.error("Failed to download infographic:", err);
+      alert("Failed to download infographic. Please try again.");
+    }
   };
 
   const [regeneratingUrls, setRegeneratingUrls] = useState<Set<string>>(new Set());
   const [regeneratedUrls, setRegeneratedUrls] = useState<Map<string, string>>(new Map());
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxSrc, setLightboxSrc] = useState('');
 
   const handleImageError = async (infographic: InfographicListItem, e: React.SyntheticEvent<HTMLImageElement>) => {
     const img = e.currentTarget;
@@ -234,7 +245,16 @@ export default function InfographicsView() {
                         </button>
                       </div>
                     ) : (infographic.image_url || regeneratedUrls.get(infographic.id)) ? (
-                      <div className="aspect-video bg-gray-100 relative overflow-hidden">
+                      <div 
+                        className="aspect-video bg-gray-100 relative overflow-hidden cursor-zoom-in"
+                        onClick={() => {
+                          const src = regeneratedUrls.get(infographic.id) || infographic.image_url;
+                          if (src) {
+                            setLightboxSrc(src);
+                            setLightboxOpen(true);
+                          }
+                        }}
+                      >
                         <img
                           src={regeneratedUrls.get(infographic.id) || infographic.image_url}
                           alt={infographic.headline || 'Infographic'}
@@ -291,7 +311,7 @@ export default function InfographicsView() {
                     {/* Actions */}
                     <div className="absolute top-2 right-2 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
-                        onClick={() => handleDownload(infographic.id)}
+                        onClick={(e) => { e.stopPropagation(); handleDownload(infographic.id); }}
                         className="p-2 bg-white/90 backdrop-blur-sm rounded-lg shadow-sm hover:bg-white transition-colors"
                         title="Download"
                       >
@@ -339,6 +359,12 @@ export default function InfographicsView() {
           )}
         </div>
       </div>
+      <InfographicLightbox
+        isOpen={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+        imageSrc={lightboxSrc}
+        alt="Infographic"
+      />
     </div>
   );
 }
