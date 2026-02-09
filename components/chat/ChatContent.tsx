@@ -1438,13 +1438,13 @@ export default function ChatContent() {
             }}
           />
         ) : (
-          <div className="relative flex-1 flex flex-col overflow-hidden bg-gradient-to-b from-white to-gray-50/30">
+          <div className="relative flex-1 flex flex-col overflow-hidden bg-white">
           {/* Content Area */}
           <div className="flex-1 overflow-y-auto">
             {currentConversation.messages.length === 0 ? (
               <BeeBotEmptyState userName={user?.name || null} />
             ) : (
-              <div className="max-w-4xl mx-auto py-6 w-full pb-64">
+              <div className="max-w-3xl mx-auto py-4 px-8 w-full pb-40">
                 {currentConversation.messages.map((message) => (
                   <ChatMessage
                     key={message.id}
@@ -1494,7 +1494,7 @@ export default function ChatContent() {
           </div>
 
           {/* Fixed Input at Bottom */}
-          <div className="absolute bottom-0 left-0 right-0 z-10">
+          <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100">
             <BeeBotInput
               onSendMessage={(msg, attachments) => handleSendMessage(msg, undefined, attachments)}
               onGenerateImage={handleGenerateImage}
