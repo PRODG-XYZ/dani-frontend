@@ -510,7 +510,7 @@ export default function ChatContent() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [currentConversation?.messages, streamingContent]);
+  }, [currentConversation?.messages, streamingContent, toolState.status, toolState.result]);
 
   const addMessageToConversation = useCallback(
     (message: Message, targetMessageId?: string) => {
@@ -1451,12 +1451,17 @@ export default function ChatContent() {
             {currentConversation.messages.length === 0 ? (
               <BeeBotEmptyState userName={user?.name || null} />
             ) : (
-              <div className="max-w-5xl mx-auto py-4 px-8 w-full pb-40">
-                {currentConversation.messages.map((message) => (
+              <div className="max-w-5xl mx-auto py-4 px-8 w-full pb-72">
+                {currentConversation.messages.map((message, index) => (
                   <ChatMessage
                     key={message.id}
                     message={message}
                     isSelected={selectedMessageId === message.id}
+                    isLastMessage={
+                      index === currentConversation.messages.length - 1 &&
+                      !(isLoading || streamingContent) &&
+                      !toolState.isActive
+                    }
                     onSelectMessage={handleSelectMessage}
                     onEdit={handleEditMessage}
                     userPictureUrl={user?.picture_url}
@@ -1464,18 +1469,19 @@ export default function ChatContent() {
                 ))}
                 {(isLoading || streamingContent) && !toolState.isActive && (
                   <ChatMessage
-                    message={{
-                      id: "streaming",
-                      content: streamingContent,
-                      role: "assistant",
-                      timestamp: new Date(),
-                    }}
-                    isLoading={isLoading && !streamingContent}
-                    userPictureUrl={user?.picture_url}
-                  />
+                      message={{
+                        id: "streaming",
+                        content: streamingContent,
+                        role: "assistant",
+                        timestamp: new Date(),
+                      }}
+                      isLoading={isLoading && !streamingContent}
+                      isLastMessage
+                      userPictureUrl={user?.picture_url}
+                    />
                 )}
                 {toolState.isActive && toolState.toolName && (
-                  <div>
+                  <div className={toolState.status === 'starting' || toolState.status === 'processing' ? 'pb-12' : (toolState.result || toolState.error ? 'pb-8' : '')}>
                     <ToolCallBlock
                       toolName={toolState.toolName as "infographic_generator" | "content_writer"}
                       status={toolState.status || "starting"}

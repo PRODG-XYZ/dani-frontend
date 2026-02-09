@@ -226,26 +226,26 @@ export function ToolResultBlock({ toolName, data }: ToolResultBlockProps) {
     const { headline, subtitle, stats, key_points } = data.structured_data;
 
     return (
-      <div className="my-3 rounded-lg border border-[var(--glass-border)] bg-[var(--surface)] overflow-hidden transition-all duration-200">
+      <div className="my-3 rounded-xl border-2 border-amber-200/80 bg-gradient-to-br from-amber-50/90 via-white to-orange-50/80 overflow-hidden shadow-md transition-all duration-200">
         {/* Header */}
         <div 
-          className="p-4 cursor-pointer flex items-center justify-between hover:bg-[var(--surface-hover)] transition-colors border-b border-transparent hover:border-[var(--glass-border)]"
+          className="p-4 cursor-pointer flex items-center justify-between hover:bg-amber-50/70 transition-colors border-b border-amber-200/60"
           onClick={() => setIsExpanded(!isExpanded)}
         >
           <div>
-            <h3 className="text-lg font-bold text-[var(--foreground)]">
+            <h3 className="text-lg font-bold text-gray-900">
               {headline}
             </h3>
             {subtitle && (
-              <p className="text-sm text-[var(--foreground-muted)] mt-1">
+              <p className="text-sm text-amber-800/80 mt-1">
                 {subtitle}
               </p>
             )}
           </div>
           {isExpanded ? (
-            <ChevronUpIcon className="w-5 h-5 text-[var(--foreground-muted)]" />
+            <ChevronUpIcon className="w-5 h-5 text-amber-600" />
           ) : (
-            <ChevronDownIcon className="w-5 h-5 text-[var(--foreground-muted)]" />
+            <ChevronDownIcon className="w-5 h-5 text-amber-600" />
           )}
         </div>
 
@@ -254,7 +254,7 @@ export function ToolResultBlock({ toolName, data }: ToolResultBlockProps) {
           <div className="pb-4">
              {/* Image (Moved to top, full width) */}
             {(data.image || data.image_url || data.s3_key) && (
-              <div className="relative group border-b border-[var(--glass-border)] mb-4 bg-black/5">
+              <div className="relative group border-b border-amber-200/60 mb-4 bg-amber-50/30">
                 <InfographicImage 
                   imageUrl={data.image_url} 
                   imageBase64={data.image} 
@@ -289,13 +289,13 @@ export function ToolResultBlock({ toolName, data }: ToolResultBlockProps) {
                   {stats.map((stat, idx) => (
                     <div
                       key={idx}
-                      className="p-3 rounded-lg bg-[var(--surface-hover)] border border-[var(--glass-border)]"
+                      className="p-3 rounded-xl bg-amber-50/80 border border-amber-200/70"
                     >
                       <div className="text-2xl mb-1">{stat.icon || "📊"}</div>
-                      <div className="text-xl font-bold text-[var(--foreground)]">
+                      <div className="text-xl font-bold text-gray-900">
                         {stat.value}
                       </div>
-                      <div className="text-xs text-[var(--foreground-muted)]">
+                      <div className="text-xs text-amber-800/80">
                         {stat.label}
                       </div>
                     </div>
@@ -306,20 +306,20 @@ export function ToolResultBlock({ toolName, data }: ToolResultBlockProps) {
               {/* Key Points */}
               {key_points && key_points.length > 0 && (
                 <div className="space-y-2">
-                  <h4 className="text-sm font-semibold text-[var(--foreground)]">
+                  <h4 className="text-sm font-semibold text-gray-900">
                     Key Insights
                   </h4>
                   <ul className="space-y-2">
                     {key_points.map((point, idx) => (
                       <li
                         key={idx}
-                        className="flex items-start gap-2 text-sm text-[var(--foreground-secondary)]"
+                        className="flex items-start gap-2 text-sm text-gray-700"
                       >
-                        <span className="text-[var(--primary)] mt-1.5 w-1.5 h-1.5 rounded-full bg-[var(--primary)] flex-shrink-0" />
+                        <span className="text-amber-500 mt-1.5 w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0" />
                         <span className="leading-relaxed">
                           {point.split(/(\*\*.*?\*\*)/).map((part, i) => 
                             part.startsWith('**') && part.endsWith('**') ? (
-                              <strong key={i} className="font-semibold text-[var(--foreground)]">
+                              <strong key={i} className="font-semibold text-gray-900">
                                 {part.slice(2, -2)}
                               </strong>
                             ) : (
@@ -335,7 +335,7 @@ export function ToolResultBlock({ toolName, data }: ToolResultBlockProps) {
 
               {/* Timing */}
               {data.timing_ms && (
-                <p className="text-xs text-[var(--foreground-muted)] pt-2 border-t border-[var(--glass-border)]">
+                <p className="text-xs text-amber-700/80 pt-2 border-t border-amber-200/60">
                   Generated in {(data.timing_ms / 1000).toFixed(1)}s
                 </p>
               )}
@@ -346,21 +346,65 @@ export function ToolResultBlock({ toolName, data }: ToolResultBlockProps) {
     );
   }
 
-  // Render content writer result
+  // Content type icons (SVG, no emoji)
+  const ContentTypeIcon = ({ type }: { type?: string }) => {
+    const className = "w-4 h-4 text-blue-600 flex-shrink-0";
+    if (type === "linkedin_post") {
+      return (
+        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        </svg>
+      );
+    }
+    if (type === "email") {
+      return (
+        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        </svg>
+      );
+    }
+    if (type === "tweet_thread") {
+      return (
+        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+        </svg>
+      );
+    }
+    if (type === "blog_draft") {
+      return (
+        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+        </svg>
+      );
+    }
+    return (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+    );
+  };
+
+  const contentTypeLabel = data.content_type === "linkedin_post" ? "LinkedIn Post" :
+    data.content_type === "email" ? "Email Draft" :
+    data.content_type === "tweet_thread" ? "Tweet Thread" :
+    data.content_type === "blog_draft" ? "Blog Post" :
+    data.content_type === "newsletter" ? "Newsletter" :
+    data.content_type === "meeting_summary" ? "Meeting Summary" :
+    "Generated Content";
+
+  // Render content writer result - minimalistic with blue bg
   if (toolName === "content_writer" && data.content) {
     return (
-      <div className="my-3 rounded-lg border border-emerald-200 bg-emerald-50/50 dark:border-emerald-900 dark:bg-emerald-950/30 overflow-hidden">
-        {/* Header */}
-        <div className="p-3 border-b border-emerald-200 dark:border-emerald-800 flex items-center justify-between">
-          <span className="text-sm font-medium text-emerald-700 dark:text-emerald-300">
-            {data.content_type === "linkedin_post" ? "LinkedIn Post" :
-             data.content_type === "email" ? "Email Draft" :
-             data.content_type === "tweet_thread" ? "Tweet Thread" :
-             "Generated Content"}
+      <div className="my-3 rounded-lg border border-blue-200 bg-blue-50/60 overflow-hidden">
+        {/* Header - minimal */}
+        <div className="px-2 py-2 flex items-center justify-between border-b border-blue-200/60">
+          <span className="inline-flex items-center gap-2 text-xs font-medium text-blue-800">
+            <ContentTypeIcon type={data.content_type} />
+            {contentTypeLabel}
           </span>
           <button
             onClick={() => handleCopy(data.content!)}
-            className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-800/50 transition-colors"
+            className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
           >
             {copied ? (
               <>
@@ -378,15 +422,15 @@ export function ToolResultBlock({ toolName, data }: ToolResultBlockProps) {
 
         {/* Content */}
         <div className="p-4">
-          <div className="prose prose-sm dark:prose-invert max-w-none">
+          <div className="prose prose-sm max-w-none text-gray-800">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{data.content}</ReactMarkdown>
           </div>
         </div>
 
-        {/* Timing */}
+        {/* Timing - subtle */}
         {data.timing_ms && (
-          <div className="px-4 pb-3">
-            <p className="text-xs text-gray-500 dark:text-gray-500">
+          <div className="px-4 pb-2">
+            <p className="text-xs text-blue-600/70">
               Generated in {(data.timing_ms / 1000).toFixed(1)}s
             </p>
           </div>

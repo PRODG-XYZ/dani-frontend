@@ -34,11 +34,11 @@ const StaticSphere = () => {
       radius
     );
 
-    gradient.addColorStop(0, 'rgba(255, 140, 0, 1)');
-    gradient.addColorStop(0.3, 'rgba(255, 100, 80, 0.9)');
-    gradient.addColorStop(0.5, 'rgba(255, 120, 150, 0.6)');
-    gradient.addColorStop(0.7, 'rgba(255, 180, 200, 0.3)');
-    gradient.addColorStop(1, 'rgba(255, 200, 200, 0)');
+    gradient.addColorStop(0, 'rgba(251, 191, 36, 1)');
+    gradient.addColorStop(0.3, 'rgba(249, 115, 22, 0.95)');
+    gradient.addColorStop(0.5, 'rgba(244, 63, 94, 0.8)');
+    gradient.addColorStop(0.7, 'rgba(251, 146, 60, 0.4)');
+    gradient.addColorStop(1, 'rgba(253, 186, 116, 0)');
 
     ctx.fillStyle = gradient;
     ctx.beginPath();
@@ -53,13 +53,14 @@ interface ChatMessageProps {
   message: Message;
   isLoading?: boolean;
   isSelected?: boolean;
+  isLastMessage?: boolean;
   onRegenerate?: () => void;
   onSelectMessage?: (messageId: string) => void;
   onEdit?: (messageId: string, newContent: string) => void;
   userPictureUrl?: string | null;
 }
 
-export default function ChatMessage({ message, isLoading, isSelected, onSelectMessage, onEdit, userPictureUrl }: ChatMessageProps) {
+export default function ChatMessage({ message, isLoading, isSelected, isLastMessage, onSelectMessage, onEdit, userPictureUrl }: ChatMessageProps) {
   const isUser = message.role === 'user';
   const [copied, setCopied] = useState(false);
   const [feedback, setFeedback] = useState<'up' | 'down' | null>(null);
@@ -75,7 +76,7 @@ export default function ChatMessage({ message, isLoading, isSelected, onSelectMe
   };
 
   return (
-    <div className="flex flex-col py-3 px-8 animate-fade-in-up">
+    <div className={`flex flex-col pt-3 px-8 animate-fade-in-up ${isLastMessage ? 'pb-8' : 'pb-3'}`}>
       <div className="max-w-5xl w-full">
         <div className="flex items-start gap-3">
           {/* Avatar/Icon */}
@@ -101,8 +102,14 @@ export default function ChatMessage({ message, isLoading, isSelected, onSelectMe
             )}
           </div>
 
-          {/* Message Bubble */}
+          {/* Message Bubble - hide when content_writer with empty content (only show tool result) */}
           <div className="flex-1 min-w-0">
+            {!(
+              !isUser &&
+              message.toolName === 'content_writer' &&
+              message.toolResult &&
+              (!message.content || !message.content.trim())
+            ) && (
             <div
               onClick={(e) => {
                 if (!isUser && onSelectMessage && !(e.target as HTMLElement).closest('a')) {
@@ -113,9 +120,9 @@ export default function ChatMessage({ message, isLoading, isSelected, onSelectMe
                 rounded-2xl px-4 py-3
                 ${isUser
                   ? 'bg-white border border-gray-200'
-                  : 'bg-gradient-to-br from-orange-50 to-orange-100/50 border border-orange-200/50'
+                  : 'bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50 border-2 border-orange-300/60 shadow-sm'
                 }
-                ${!isUser && onSelectMessage ? 'cursor-pointer hover:border-orange-300/70 transition-colors' : ''}
+                ${!isUser && onSelectMessage ? 'cursor-pointer hover:border-orange-400/80 hover:shadow-md transition-all' : ''}
               `}
             >
               {isLoading ? (
@@ -161,8 +168,8 @@ export default function ChatMessage({ message, isLoading, isSelected, onSelectMe
 
               {/* Sources count tag - assistant messages only */}
               {!isUser && !isLoading && message.sources && message.sources.length > 0 && (
-                <div className="mt-3 pt-2 border-t border-orange-200/50">
-                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-orange-100/80 text-orange-700 text-xs font-medium">
+                <div className="mt-3 pt-2 border-t border-orange-300/60">
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 text-xs font-medium">
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
@@ -171,9 +178,14 @@ export default function ChatMessage({ message, isLoading, isSelected, onSelectMe
                 </div>
               )}
             </div>
+            )}
 
-        {/* Action Buttons - Only for assistant messages */}
-        {!isUser && !isLoading && (
+        {/* Action Buttons - Only for assistant messages (hide for content_writer with only tool result) */}
+        {!isUser && !isLoading && !(
+          message.toolName === 'content_writer' &&
+          message.toolResult &&
+          (!message.content || !message.content.trim())
+        ) && (
               <div className="flex items-center gap-2 mt-2 px-1">
                 {/* Thumbs Up/Down */}
             <button
