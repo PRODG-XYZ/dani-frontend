@@ -45,8 +45,8 @@ export default function BeeBotHeader({
             </svg>
           </button>
         )}
-        {/* Sources Toggle Button */}
-        {onToggleSources && (
+        {/* Sources Toggle Button - Only show when in a conversation with sources */}
+        {onToggleSources && sourcesCount > 0 && (
           <button
             onClick={onToggleSources}
             className={`relative flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${

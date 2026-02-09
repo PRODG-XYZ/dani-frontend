@@ -60,7 +60,7 @@ export default function ChatSkeleton() {
 
         {/* Chat Area */}
         <div className="flex-1 overflow-y-auto bg-white">
-          <div className="max-w-3xl mx-auto py-4 px-8 w-full">
+          <div className="max-w-5xl mx-auto py-4 px-8 w-full">
             {/* Empty State Skeleton */}
             <div className="flex flex-col items-center justify-center py-12">
               <div className="w-32 h-32 rounded-full bg-gray-200 animate-pulse mb-6" />
@@ -72,7 +72,7 @@ export default function ChatSkeleton() {
 
         {/* Input Skeleton */}
         <div className="px-8 py-6 bg-white border-t border-gray-100">
-          <div className="max-w-3xl mx-auto">
+          <div className="max-w-5xl mx-auto">
             <div className="w-full h-14 rounded-[20px] bg-gray-200 animate-pulse" />
           </div>
         </div>

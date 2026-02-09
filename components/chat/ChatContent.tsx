@@ -60,6 +60,7 @@ export default function ChatContent() {
   const [selectedMessageId, setSelectedMessageId] = useState<string | null>(
     null
   );
+  const [openSourcesTrigger, setOpenSourcesTrigger] = useState(0);
   const [docType, setDocType] = useState<'meeting' | 'email' | 'document' | 'note' | 'all'>('all');
   const [meetingCategory, setMeetingCategory] = useState<MeetingCategory>('all');
   const [pendingConversationId, setPendingConversationId] = useState<string | null>(null);
@@ -1258,6 +1259,8 @@ export default function ChatContent() {
 
   const handleNewConversation = () => {
     setCurrentConversationId("new");
+    setSources([]);
+    setSelectedMessageId(null);
   };
 
   const handleDeleteConversation = async (id: string) => {
@@ -1345,21 +1348,14 @@ export default function ChatContent() {
     );
   }
 
-  // Handler for clicking a message to show its sources
+  // Handler for clicking a message to show its sources in the Sources panel
   const handleSelectMessage = (messageId: string) => {
-    console.log("[Chat] Message selected:", messageId);
     setSelectedMessageId(messageId);
 
-    // Find the message and update sources in sidebar
     const message = currentConversation?.messages.find(
       (m) => m.id === messageId
     );
     if (message?.sources && message.sources.length > 0) {
-      console.log(
-        "[Chat] Updating sidebar sources from message:",
-        message.sources
-      );
-      // Map MessageSource to Source type for the sidebar
       setSources(
         message.sources.map((s) => ({
           title: s.title || null,
@@ -1370,6 +1366,9 @@ export default function ChatContent() {
           relevance_score: s.relevance_score ?? null,
         }))
       );
+      setOpenSourcesTrigger((t) => t + 1);
+    } else {
+      setSources([]);
     }
   };
 
@@ -1378,7 +1377,13 @@ export default function ChatContent() {
       <BeeBotLayout
         conversations={conversations}
         currentConversationId={currentConversationId || "new"}
-        onSelectConversation={handleSelectConversation}
+        onSelectConversation={(id) => {
+          handleSelectConversation(id);
+          setShowHistory(false);
+          setShowUserManagement(false);
+          setShowLibrary(false);
+          setShowInfographics(false);
+        }}
         onNewConversation={handleNewConversation}
         user={user}
         sources={sources}
@@ -1397,6 +1402,7 @@ export default function ChatContent() {
           setShowUserManagement(false);
           setShowLibrary(false);
           setShowInfographics(false);
+          handleNewConversation();
         }}
         onNavigateToUserManagement={() => {
           setShowHistory(false);
@@ -1418,6 +1424,7 @@ export default function ChatContent() {
         }}
         isLoadingConversations={isLoadingHistory}
         isLoadingAuth={isAuthLoading}
+        openSourcesTrigger={openSourcesTrigger}
       >
         {showInfographics ? (
           <InfographicsView />
@@ -1444,7 +1451,7 @@ export default function ChatContent() {
             {currentConversation.messages.length === 0 ? (
               <BeeBotEmptyState userName={user?.name || null} />
             ) : (
-              <div className="max-w-3xl mx-auto py-4 px-8 w-full pb-40">
+              <div className="max-w-5xl mx-auto py-4 px-8 w-full pb-40">
                 {currentConversation.messages.map((message) => (
                   <ChatMessage
                     key={message.id}

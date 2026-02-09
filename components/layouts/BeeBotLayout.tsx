@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, ReactNode } from 'react';
+import { useState, useEffect, ReactNode } from 'react';
 import BeeBotSidebar from '@/components/chat/BeeBotSidebar';
 import BeeBotHeader from '@/components/chat/BeeBotHeader';
 import SourcesPanel from '@/components/chat/SourcesPanel';
@@ -25,6 +25,8 @@ interface BeeBotLayoutProps {
   onNavigateToInfographics?: () => void;
   isLoadingConversations?: boolean;
   isLoadingAuth?: boolean;
+  /** When this increments, the Sources panel will auto-open (e.g. when user clicks a message with sources) */
+  openSourcesTrigger?: number;
 }
 
 export default function BeeBotLayout({
@@ -46,8 +48,22 @@ export default function BeeBotLayout({
   onNavigateToInfographics,
   isLoadingConversations = false,
   isLoadingAuth = false,
+  openSourcesTrigger = 0,
 }: BeeBotLayoutProps) {
   const [isSourcesOpen, setIsSourcesOpen] = useState(false);
+
+  useEffect(() => {
+    if (openSourcesTrigger > 0) {
+      setIsSourcesOpen(true);
+    }
+  }, [openSourcesTrigger]);
+
+  // Close Sources panel when switching to new chat (no sources)
+  useEffect(() => {
+    if (currentConversationId === 'new' || sources.length === 0) {
+      setIsSourcesOpen(false);
+    }
+  }, [currentConversationId, sources.length]);
 
   return (
     <div className="flex h-screen bg-white overflow-hidden">

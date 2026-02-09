@@ -76,7 +76,7 @@ export default function ChatMessage({ message, isLoading, isSelected, onSelectMe
 
   return (
     <div className="flex flex-col py-3 px-8 animate-fade-in-up">
-      <div className="max-w-3xl w-full">
+      <div className="max-w-5xl w-full">
         <div className="flex items-start gap-3">
           {/* Avatar/Icon */}
           <div className="flex-shrink-0 mt-1">
@@ -104,12 +104,18 @@ export default function ChatMessage({ message, isLoading, isSelected, onSelectMe
           {/* Message Bubble */}
           <div className="flex-1 min-w-0">
             <div
+              onClick={(e) => {
+                if (!isUser && onSelectMessage && !(e.target as HTMLElement).closest('a')) {
+                  onSelectMessage(message.id);
+                }
+              }}
               className={`
                 rounded-2xl px-4 py-3
                 ${isUser
                   ? 'bg-white border border-gray-200'
                   : 'bg-gradient-to-br from-orange-50 to-orange-100/50 border border-orange-200/50'
                 }
+                ${!isUser && onSelectMessage ? 'cursor-pointer hover:border-orange-300/70 transition-colors' : ''}
               `}
             >
               {isLoading ? (
@@ -150,6 +156,18 @@ export default function ChatMessage({ message, isLoading, isSelected, onSelectMe
                       )}
                     </div>
                   ))}
+                </div>
+              )}
+
+              {/* Sources count tag - assistant messages only */}
+              {!isUser && !isLoading && message.sources && message.sources.length > 0 && (
+                <div className="mt-3 pt-2 border-t border-orange-200/50">
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-orange-100/80 text-orange-700 text-xs font-medium">
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    {message.sources.length} {message.sources.length === 1 ? 'source' : 'sources'}
+                  </span>
                 </div>
               )}
             </div>
