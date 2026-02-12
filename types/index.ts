@@ -186,3 +186,130 @@ export interface ToolMessage extends Omit<Message, 'content'> {
   toolError?: string;
   content: string;  // Summary message for display
 }
+
+// ============================================
+// Action Items Types (Phase 1A)
+// ============================================
+
+export type ActionItemPriority = 'critical' | 'high' | 'medium' | 'low';
+export type ActionItemStatus = 'not_started' | 'in_progress' | 'completed' | 'cancelled' | 'blocked';
+export type FeedbackType = 'accurate' | 'incorrect';
+export type ErrorCategory = 'wrong_owner' | 'wrong_date' | 'wrong_task' | 'hallucination';
+
+export interface ActionItemCreate {
+  task_description: string;
+  assigned_to: string;
+  assigned_to_email?: string | null;
+  due_date?: string | null;
+  priority?: ActionItemPriority;
+  status?: ActionItemStatus;
+  confidence_score?: number | null;
+  source_quote?: string | null;
+  meeting_id?: string | null;
+  meeting_title?: string | null;
+  meeting_date?: string | null;
+  project_name?: string | null;
+  is_manual?: boolean;
+  needs_review?: boolean;
+  notes?: string | null;
+}
+
+export interface ActionItem {
+  id: string;
+  user_id: string;
+  meeting_id: string | null;
+  task_description: string;
+  assigned_to: string;
+  assigned_to_email: string | null;
+  due_date: string | null;
+  priority: ActionItemPriority;
+  status: ActionItemStatus;
+  confidence_score: number | null;
+  source_quote: string | null;
+  meeting_title: string | null;
+  meeting_date: string | null;
+  project_name: string | null;
+  is_manual: boolean;
+  needs_review: boolean;
+  notes: string | null;
+  completed_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ActionItemUpdate {
+  task_description?: string;
+  assigned_to?: string;
+  assigned_to_email?: string | null;
+  due_date?: string | null;
+  priority?: ActionItemPriority;
+  status?: ActionItemStatus;
+  project_name?: string | null;
+  notes?: string | null;
+}
+
+export interface ActionItemDependency {
+  id: string;
+  task_description: string;
+  assigned_to: string;
+  status: ActionItemStatus;
+  priority: ActionItemPriority;
+  due_date: string | null;
+}
+
+export interface ActionItemFeedback {
+  id: string;
+  action_item_id: string;
+  user_id: string;
+  feedback_type: FeedbackType;
+  error_category: ErrorCategory | null;
+  comment: string | null;
+  created_at: string;
+}
+
+export interface ActionItemDetail extends ActionItem {
+  dependencies: ActionItemDependency[];
+  feedbacks: ActionItemFeedback[];
+}
+
+export interface ActionItemListResponse {
+  items: ActionItem[];
+  total: number;
+  page: number;
+  page_size: number;
+  has_more: boolean;
+}
+
+export interface DependencyCreate {
+  depends_on_id: string;
+}
+
+export interface DependencyResponse {
+  id: string;
+  action_item_id: string;
+  depends_on_id: string;
+  depends_on: ActionItemDependency;
+  created_at: string;
+}
+
+export interface FeedbackCreate {
+  feedback_type: FeedbackType;
+  error_category?: ErrorCategory | null;
+  comment?: string | null;
+}
+
+export interface ActionItemFilters {
+  assigned_to?: string;
+  status?: ActionItemStatus;
+  priority?: ActionItemPriority;
+  project_name?: string;
+  meeting_id?: string;
+  needs_review?: boolean;
+  due_date_before?: string;
+  due_date_after?: string;
+  search?: string;
+  sort_by?: 'created_at' | 'due_date' | 'priority' | 'status' | 'updated_at';
+  sort_order?: 'asc' | 'desc';
+  page?: number;
+  page_size?: number;
+}

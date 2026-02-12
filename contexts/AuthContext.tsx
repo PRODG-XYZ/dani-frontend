@@ -36,6 +36,7 @@ interface AuthProviderProps {
 }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+const MOCK_AUTH_TOKEN = process.env.NEXT_PUBLIC_MOCK_AUTH_TOKEN;
 
 // Token storage keys
 const ACCESS_TOKEN_KEY = 'dani-access-token';
@@ -53,6 +54,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     const loadStoredAuth = async () => {
       try {
+        // If mock token is available, use it for testing
+        if (MOCK_AUTH_TOKEN) {
+          const mockUser: AuthUser = {
+            id: 'mock-user-id',
+            email: 'dev@eutopiantech.com',
+            name: 'Mock User',
+            picture_url: null,
+            created_at: new Date().toISOString(),
+            last_login_at: new Date().toISOString(),
+          };
+          setUser(mockUser);
+          setAccessToken(MOCK_AUTH_TOKEN);
+          localStorage.setItem(USER_KEY, JSON.stringify(mockUser));
+          localStorage.setItem(ACCESS_TOKEN_KEY, MOCK_AUTH_TOKEN);
+          setIsLoading(false);
+          return;
+        }
+
         const storedUser = localStorage.getItem(USER_KEY);
         const storedAccessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
         const storedRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
@@ -290,11 +309,16 @@ export async function getStoredToken(): Promise<string | null> {
   if (typeof window === 'undefined') {
     return null;
   }
-  
+
+  // Use mock token if available
+  if (MOCK_AUTH_TOKEN) {
+    return MOCK_AUTH_TOKEN;
+  }
+
   const accessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
   const expiry = localStorage.getItem(TOKEN_EXPIRY_KEY);
   const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
-  
+
   // Check if access token is still valid
   if (accessToken && expiry) {
     const expiryTime = parseInt(expiry, 10);
