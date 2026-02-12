@@ -4,8 +4,21 @@
 
 import { getStoredToken } from "@/contexts/AuthContext";
 
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
+/**
+ * Get the active API URL based on environment configuration
+ */
+function getApiUrl(): string {
+  const env = process.env.NEXT_PUBLIC_API_ENV || "local";
+  const urls = {
+    local: process.env.NEXT_PUBLIC_API_URL_LOCAL || "http://127.0.0.1:8000/api/v1",
+    live: process.env.NEXT_PUBLIC_API_URL_LIVE || "https://dani-backend-dmri.onrender.com/api/v1",
+    postman: process.env.NEXT_PUBLIC_API_URL_POSTMAN || "https://fea2bca9-9499-4388-8315-afb077f61772.mock.pstmn.io",
+  };
+
+  return urls[env as keyof typeof urls] || urls.local;
+}
+
+const API_URL = getApiUrl();
 
 /**
  * Get authorization headers with current token
@@ -1591,6 +1604,315 @@ export async function getTranscriptStats(): Promise<{
   const response = await safeFetch(`${API_URL}/fireflies/stats`, {
     headers: authHeaders,
   });
+  await handleResponse(response);
+  return response.json();
+}
+
+// ============================================
+// Action Items API (Phase 1A)
+// ============================================
+
+import type {
+  ActionItem,
+  ActionItemCreate,
+  ActionItemUpdate,
+  ActionItemDetail,
+  ActionItemListResponse,
+  ActionItemFilters,
+  DependencyCreate,
+  DependencyResponse,
+  FeedbackCreate,
+  ActionItemFeedback,
+} from '@/types';
+
+/**
+ * Create a new action item
+ */
+export async function createActionItem(
+  data: ActionItemCreate
+): Promise<ActionItem> {
+  console.log('[API] createActionItem:', data);
+  const authHeaders = await getAuthHeaders();
+
+  const response = await safeFetch(`${API_URL}/action-items`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...authHeaders,
+    },
+    body: JSON.stringify(data),
+  });
+
+  await handleResponse(response);
+  return response.json();
+}
+
+/**
+ * List action items with filters and pagination
+ */
+export async function listActionItems(
+  filters?: ActionItemFilters
+): Promise<ActionItemListResponse> {
+  console.log('[API] listActionItems:', filters);
+  const authHeaders = await getAuthHeaders();
+
+  const params = new URLSearchParams();
+
+  if (filters) {
+    if (filters.assigned_to) params.append('assigned_to', filters.assigned_to);
+    if (filters.status) params.append('status', filters.status);
+    if (filters.priority) params.append('priority', filters.priority);
+    if (filters.project_name) params.append('project_name', filters.project_name);
+    if (filters.meeting_id) params.append('meeting_id', filters.meeting_id);
+    if (filters.needs_review !== undefined) params.append('needs_review', String(filters.needs_review));
+    if (filters.due_date_before) params.append('due_date_before', filters.due_date_before);
+    if (filters.due_date_after) params.append('due_date_after', filters.due_date_after);
+    if (filters.search) params.append('search', filters.search);
+    if (filters.sort_by) params.append('sort_by', filters.sort_by);
+    if (filters.sort_order) params.append('sort_order', filters.sort_order);
+    if (filters.page) params.append('page', String(filters.page));
+    if (filters.page_size) params.append('page_size', String(filters.page_size));
+  }
+
+  const url = params.toString()
+    ? `${API_URL}/action-items?${params.toString()}`
+    : `${API_URL}/action-items`;
+
+  const response = await safeFetch(url, {
+    headers: authHeaders,
+  });
+
+  await handleResponse(response);
+  return response.json();
+}
+
+/**
+ * Get a single action item by ID with dependencies and feedback
+ */
+export async function getActionItem(itemId: string): Promise<ActionItemDetail> {
+  console.log('[API] getActionItem:', itemId);
+  const authHeaders = await getAuthHeaders();
+
+  const response = await safeFetch(`${API_URL}/action-items/${itemId}`, {
+    headers: authHeaders,
+  });
+
+  await handleResponse(response);
+  return response.json();
+}
+
+/**
+ * Update an action item
+ */
+export async function updateActionItem(
+  itemId: string,
+  data: ActionItemUpdate
+): Promise<ActionItem> {
+  console.log('[API] updateActionItem:', { itemId, data });
+  const authHeaders = await getAuthHeaders();
+
+  const response = await safeFetch(`${API_URL}/action-items/${itemId}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      ...authHeaders,
+    },
+    body: JSON.stringify(data),
+  });
+
+  await handleResponse(response);
+  return response.json();
+}
+
+/**
+ * Delete an action item (soft delete)
+ */
+export async function deleteActionItem(itemId: string): Promise<void> {
+  console.log('[API] deleteActionItem:', itemId);
+  const authHeaders = await getAuthHeaders();
+
+  const response = await safeFetch(`${API_URL}/action-items/${itemId}`, {
+    method: 'DELETE',
+    headers: authHeaders,
+  });
+
+  await handleResponse(response);
+}
+
+/**
+ * Quick-complete an action item
+ */
+export async function completeActionItem(itemId: string): Promise<ActionItem> {
+  console.log('[API] completeActionItem:', itemId);
+  const authHeaders = await getAuthHeaders();
+
+  const response = await safeFetch(`${API_URL}/action-items/${itemId}/complete`, {
+    method: 'POST',
+    headers: authHeaders,
+  });
+
+  await handleResponse(response);
+  return response.json();
+}
+
+/**
+ * Get review queue (low-confidence AI-extracted items)
+ */
+export async function getReviewQueue(
+  confidenceThreshold: number = 0.8,
+  page: number = 1,
+  pageSize: number = 20
+): Promise<ActionItemListResponse> {
+  console.log('[API] getReviewQueue:', { confidenceThreshold, page, pageSize });
+  const authHeaders = await getAuthHeaders();
+
+  const params = new URLSearchParams();
+  params.append('confidence_threshold', String(confidenceThreshold));
+  params.append('page', String(page));
+  params.append('page_size', String(pageSize));
+
+  const response = await safeFetch(
+    `${API_URL}/action-items/review-queue?${params.toString()}`,
+    {
+      headers: authHeaders,
+    }
+  );
+
+  await handleResponse(response);
+  return response.json();
+}
+
+/**
+ * Approve a reviewed item
+ */
+export async function approveReviewedItem(itemId: string): Promise<ActionItem> {
+  console.log('[API] approveReviewedItem:', itemId);
+  const authHeaders = await getAuthHeaders();
+
+  const response = await safeFetch(
+    `${API_URL}/action-items/review-queue/${itemId}/approve`,
+    {
+      method: 'POST',
+      headers: authHeaders,
+    }
+  );
+
+  await handleResponse(response);
+  return response.json();
+}
+
+/**
+ * Reject a reviewed item
+ */
+export async function rejectReviewedItem(itemId: string): Promise<ActionItem> {
+  console.log('[API] rejectReviewedItem:', itemId);
+  const authHeaders = await getAuthHeaders();
+
+  const response = await safeFetch(
+    `${API_URL}/action-items/review-queue/${itemId}/reject`,
+    {
+      method: 'POST',
+      headers: authHeaders,
+    }
+  );
+
+  await handleResponse(response);
+  return response.json();
+}
+
+/**
+ * Add a dependency to an action item
+ */
+export async function addDependency(
+  itemId: string,
+  data: DependencyCreate
+): Promise<DependencyResponse> {
+  console.log('[API] addDependency:', { itemId, data });
+  const authHeaders = await getAuthHeaders();
+
+  const response = await safeFetch(`${API_URL}/action-items/${itemId}/dependencies`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...authHeaders,
+    },
+    body: JSON.stringify(data),
+  });
+
+  await handleResponse(response);
+  return response.json();
+}
+
+/**
+ * List dependencies for an action item
+ */
+export async function listDependencies(itemId: string): Promise<DependencyResponse[]> {
+  console.log('[API] listDependencies:', itemId);
+  const authHeaders = await getAuthHeaders();
+
+  const response = await safeFetch(`${API_URL}/action-items/${itemId}/dependencies`, {
+    headers: authHeaders,
+  });
+
+  await handleResponse(response);
+  return response.json();
+}
+
+/**
+ * Remove a dependency
+ */
+export async function removeDependency(
+  itemId: string,
+  dependencyId: string
+): Promise<void> {
+  console.log('[API] removeDependency:', { itemId, dependencyId });
+  const authHeaders = await getAuthHeaders();
+
+  const response = await safeFetch(
+    `${API_URL}/action-items/${itemId}/dependencies/${dependencyId}`,
+    {
+      method: 'DELETE',
+      headers: authHeaders,
+    }
+  );
+
+  await handleResponse(response);
+}
+
+/**
+ * Submit feedback on an action item
+ */
+export async function submitFeedback(
+  itemId: string,
+  data: FeedbackCreate
+): Promise<ActionItemFeedback> {
+  console.log('[API] submitFeedback:', { itemId, data });
+  const authHeaders = await getAuthHeaders();
+
+  const response = await safeFetch(`${API_URL}/action-items/${itemId}/feedback`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...authHeaders,
+    },
+    body: JSON.stringify(data),
+  });
+
+  await handleResponse(response);
+  return response.json();
+}
+
+/**
+ * Get feedback history for an action item
+ */
+export async function getFeedbackHistory(itemId: string): Promise<ActionItemFeedback[]> {
+  console.log('[API] getFeedbackHistory:', itemId);
+  const authHeaders = await getAuthHeaders();
+
+  const response = await safeFetch(`${API_URL}/action-items/${itemId}/feedback`, {
+    headers: authHeaders,
+  });
+
   await handleResponse(response);
   return response.json();
 }
