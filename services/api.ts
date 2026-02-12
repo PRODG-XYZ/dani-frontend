@@ -8,7 +8,7 @@ import { getStoredToken } from "@/contexts/AuthContext";
  * Get the active API URL based on environment configuration
  */
 function getApiUrl(): string {
-  const env = process.env.NEXT_PUBLIC_API_ENV || "local";
+  const env = process.env.NEXT_PUBLIC_API_ENV || "live";
   const urls = {
     local: process.env.NEXT_PUBLIC_API_URL_LOCAL || "http://127.0.0.1:8000/api/v1",
     live: process.env.NEXT_PUBLIC_API_URL_LIVE || "https://dani-backend-dmri.onrender.com/api/v1",
