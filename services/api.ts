@@ -15,7 +15,9 @@ function getApiUrl(): string {
     postman: process.env.NEXT_PUBLIC_API_URL_POSTMAN || "https://fea2bca9-9499-4388-8315-afb077f61772.mock.pstmn.io",
   };
 
-  return urls[env as keyof typeof urls] || urls.local;
+  const selectedUrl = urls[env as keyof typeof urls] || urls.local;
+  console.log('[API] Environment:', env, '| API URL:', selectedUrl);
+  return selectedUrl;
 }
 
 const API_URL = getApiUrl();

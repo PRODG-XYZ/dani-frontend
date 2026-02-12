@@ -35,7 +35,18 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+// Use the same environment-based URL selection as api.ts
+function getApiUrl(): string {
+  const env = process.env.NEXT_PUBLIC_API_ENV || "live";
+  const urls = {
+    local: process.env.NEXT_PUBLIC_API_URL_LOCAL || "http://127.0.0.1:8000/api/v1",
+    live: process.env.NEXT_PUBLIC_API_URL_LIVE || "https://dani-backend-dmri.onrender.com/api/v1",
+    postman: process.env.NEXT_PUBLIC_API_URL_POSTMAN || "https://fea2bca9-9499-4388-8315-afb077f61772.mock.pstmn.io",
+  };
+  return urls[env as keyof typeof urls] || urls.live;
+}
+
+const API_URL = getApiUrl();
 const MOCK_AUTH_TOKEN = process.env.NEXT_PUBLIC_MOCK_AUTH_TOKEN;
 
 // Token storage keys
