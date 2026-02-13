@@ -225,9 +225,7 @@ export default function BeeBotInput({
     (!isGhostwriterMode || !!onGenerateGhostwriter);
 
   return (
-    <div className="px-6 py-5 bg-gradient-to-t from-gray-50 to-white border-t border-gray-200">
-      <div className="max-w-4xl mx-auto">
-        <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit}>
           <div className={`relative bg-white rounded-2xl border-2 shadow-lg transition-all duration-200 ${
             isFocused
               ? 'border-[#FF8C00] ring-4 ring-[#FF8C00]/10 shadow-xl'
@@ -536,7 +534,5 @@ export default function BeeBotInput({
             </div>
           </div>
         </form>
-      </div>
-    </div>
   );
 }
