@@ -76,20 +76,20 @@ export function AddDependencyModal({ currentItemId, onClose, onSubmit }: AddDepe
       <div className="flex min-h-screen items-center justify-center p-4 sm:p-0">
         {/* Backdrop */}
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
           onClick={onClose}
         ></div>
 
         {/* Modal */}
-        <div className="relative bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-2xl w-full mx-auto max-h-[90vh] overflow-y-auto">
+        <div className="relative bg-[var(--surface)] rounded-lg shadow-xl max-w-2xl w-full mx-auto max-h-[90vh] overflow-y-auto">
           {/* Header */}
-          <div className="sticky top-0 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-4 flex items-center justify-between z-10">
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
+          <div className="sticky top-0 bg-[var(--surface)] border-b border-[var(--border)] px-6 py-4 flex items-center justify-between z-10">
+            <h2 className="text-xl font-bold text-[var(--foreground)]">
               Add Dependency
             </h2>
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+              className="text-[var(--foreground-muted)] hover:text-[var(--foreground)] transition-colors"
               aria-label="Close"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -100,13 +100,13 @@ export function AddDependencyModal({ currentItemId, onClose, onSubmit }: AddDepe
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
-            <p className="text-sm text-slate-600 dark:text-slate-400">
+            <p className="text-sm text-[var(--foreground-muted)]">
               Select an action item that this item depends on. The selected item must be completed before this item can be started.
             </p>
 
             {/* Search */}
             <div>
-              <label htmlFor="search" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              <label htmlFor="search" className="block text-sm font-medium text-[var(--foreground)] mb-2">
                 Search Action Items
               </label>
               <input
@@ -115,34 +115,34 @@ export function AddDependencyModal({ currentItemId, onClose, onSubmit }: AddDepe
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search by task, assignee, or project..."
-                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-900 dark:text-white transition-colors"
+                className="w-full px-3 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] bg-[var(--background)] text-[var(--foreground)] placeholder:text-[var(--foreground-muted)] transition-colors"
               />
             </div>
 
             {/* Item List */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
                 Available Action Items
               </label>
-              <div className="border border-slate-300 dark:border-slate-600 rounded-lg max-h-96 overflow-y-auto">
+              <div className="border border-[var(--border)] rounded-lg max-h-96 overflow-y-auto">
                 {loading && (
                   <div className="flex items-center justify-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--primary)]"></div>
                   </div>
                 )}
 
                 {!loading && availableItems.length === 0 && (
-                  <div className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
+                  <div className="py-8 text-center text-sm text-[var(--foreground-muted)]">
                     No action items found
                   </div>
                 )}
 
                 {!loading && availableItems.length > 0 && (
-                  <div className="divide-y divide-slate-200 dark:divide-slate-700">
+                  <div className="divide-y divide-[var(--border)]">
                     {availableItems.map((item) => (
                       <label
                         key={item.id}
-                        className="flex items-start p-4 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer transition-colors"
+                        className="flex items-start p-4 hover:bg-[var(--surface-hover)] cursor-pointer transition-colors"
                       >
                         <input
                           type="radio"
@@ -150,13 +150,13 @@ export function AddDependencyModal({ currentItemId, onClose, onSubmit }: AddDepe
                           value={item.id}
                           checked={selectedItemId === item.id}
                           onChange={(e) => setSelectedItemId(e.target.value)}
-                          className="mt-1 mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 dark:border-slate-600"
+                          className="mt-1 mr-3 h-4 w-4 text-[var(--primary)] focus:ring-[var(--primary)] border-[var(--border)]"
                         />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-slate-900 dark:text-white line-clamp-2">
+                          <p className="text-sm font-medium text-[var(--foreground)] line-clamp-2">
                             {item.task_description}
                           </p>
-                          <div className="mt-1 flex flex-wrap gap-2 text-xs text-slate-500 dark:text-slate-400">
+                          <div className="mt-1 flex flex-wrap gap-2 text-xs text-[var(--foreground-muted)]">
                             <span>Assigned to: {item.assigned_to}</span>
                             <span>•</span>
                             <span>Status: {item.status.replace('_', ' ')}</span>
@@ -187,14 +187,14 @@ export function AddDependencyModal({ currentItemId, onClose, onSubmit }: AddDepe
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors"
+                className="flex-1 px-4 py-2 text-sm font-medium text-[var(--foreground)] bg-[var(--surface)] border border-[var(--border)] rounded-lg hover:bg-[var(--surface-hover)] transition-colors"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting || !selectedItemId}
-                className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors"
+                className="flex-1 px-4 py-2 text-sm font-bold text-white bg-[var(--primary)] shadow-sm rounded-lg hover:bg-[var(--primary-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {isSubmitting ? (
                   <span className="flex items-center justify-center">

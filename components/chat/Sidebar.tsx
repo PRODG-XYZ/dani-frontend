@@ -73,24 +73,25 @@ export default function Sidebar({
   };
 
   return (
-    <div 
+    <div
       className={`
-        flex flex-col h-full 
+        flex flex-col h-full
         bg-[var(--background)]
-        border-r border-[var(--border)]
-        transition-all duration-300 ease-out
+        transition-all duration-300 ease-in-out
         ${isCollapsed ? 'w-20' : 'w-full'}
       `}
     >
       {/* Header */}
-      <div className="flex-shrink-0 p-4 space-y-4">
+      <div className="shrink-0 p-3 md:p-4 space-y-3 md:space-y-4">
         {/* Logo and Toggle */}
         <div className="flex items-center justify-between">
           {!isCollapsed && (
-            <Logo size="sm" showText={true} />
+            <div className="animate-fade-in">
+              <Logo size="sm" showText={true} />
+            </div>
           )}
           {isCollapsed && (
-            <div className="mx-auto">
+            <div className="mx-auto animate-fade-in">
               <Logo size="sm" showText={false} />
             </div>
           )}
@@ -120,12 +121,15 @@ export default function Sidebar({
           <button
             onClick={() => setIsSearchOpen(true)}
             className="
-              w-full px-4 py-2.5 
+              w-full px-3 md:px-4 py-2 md:py-2.5
               text-left text-sm text-[var(--foreground-muted)]
               glass rounded-xl
               hover:bg-[var(--surface-hover)]
+              hover:shadow-md
               transition-all duration-200
               flex items-center gap-2
+              hover:scale-[1.02]
+              active:scale-[0.98]
             "
           >
             <DeepSearchIcon className="w-4 h-4" />
@@ -133,21 +137,21 @@ export default function Sidebar({
           </button>
         )}
         
-        {/* New Chat Button */}
+        {/* New Chat Button + Microservices Dropdown */}
         {isCollapsed ? (
           <IconButton
             icon={<PlusIcon className="w-5 h-5" />}
             ariaLabel="New Chat"
             onClick={onNewConversation}
             variant="primary"
-            className="w-full"
+            className="w-full animate-pulse-glow"
           />
         ) : (
           <Button
             variant="primary"
             fullWidth
             onClick={onNewConversation}
-            className="gap-2 shadow-lg shadow-[var(--primary-glow)]"
+            className="gap-2 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200"
           >
             <PlusIcon className="w-5 h-5" />
             New Chat
@@ -227,20 +231,20 @@ export default function Sidebar({
       )}
 
       {/* Conversations List */}
-      <div className="flex-1 overflow-y-auto p-2 space-y-1">
+      <div className="flex-1 overflow-y-auto p-2 space-y-1 scrollbar-thin">
         {conversations.map((conversation, index) => (
           <div
             key={conversation.id}
             className={`
-              group relative rounded-xl 
+              group relative rounded-xl
               transition-all duration-200
               animate-fade-in-up
               ${currentConversationId === conversation.id
-                ? 'bg-[var(--surface)] shadow-md border border-[var(--border)]'
-                : 'hover:bg-[var(--surface-hover)]'
+                ? 'bg-[var(--surface)] shadow-md border border-[var(--primary)]/30 scale-[1.02]'
+                : 'hover:bg-[var(--surface-hover)] hover:scale-[1.01]'
               }
             `}
-            style={{ animationDelay: `${index * 50}ms` }}
+            style={{ animationDelay: `${index * 30}ms` }}
             onMouseEnter={() => setHoveredId(conversation.id)}
             onMouseLeave={() => setHoveredId(null)}
           >
@@ -248,17 +252,18 @@ export default function Sidebar({
               onClick={() => onSelectConversation(conversation.id)}
               className={`
                 w-full text-left focus:outline-none
-                ${isCollapsed ? 'p-3 flex justify-center' : 'p-3 pr-10'}
+                transition-all duration-200
+                ${isCollapsed ? 'p-3 flex justify-center' : 'p-2.5 md:p-3 pr-10'}
               `}
               title={isCollapsed ? conversation.title : undefined}
             >
               {isCollapsed ? (
-                <ChatIcon className="w-5 h-5 flex-shrink-0 text-[var(--foreground-secondary)]" />
+                <ChatIcon className="w-5 h-5 shrink-0 text-[var(--foreground-secondary)] group-hover:text-[var(--primary)] transition-colors" />
               ) : (
-                <div className="flex items-start gap-3">
-                  <ChatIcon className="w-5 h-5 mt-0.5 flex-shrink-0 text-[var(--foreground-secondary)]" />
+                <div className="flex items-start gap-2.5 md:gap-3">
+                  <ChatIcon className="w-4 h-4 md:w-5 md:h-5 mt-0.5 shrink-0 text-[var(--foreground-secondary)] group-hover:text-[var(--primary)] transition-colors" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-[var(--foreground)] truncate">
+                    <p className="text-sm font-medium text-[var(--foreground)] truncate group-hover:text-[var(--primary)] transition-colors">
                       {conversation.title}
                     </p>
                     <p className="text-xs text-[var(--foreground-muted)] mt-0.5">
@@ -268,7 +273,7 @@ export default function Sidebar({
                 </div>
               )}
             </button>
-            
+
             {/* Delete Button */}
             {hoveredId === conversation.id && onDeleteConversation && !isCollapsed && (
               <div className="absolute right-2 top-1/2 -translate-y-1/2 animate-fade-in">
@@ -281,7 +286,7 @@ export default function Sidebar({
                     e.stopPropagation();
                     onDeleteConversation(conversation.id);
                   }}
-                  className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                  className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 hover:scale-110 active:scale-90 transition-all"
                 />
               </div>
             )}
@@ -290,7 +295,7 @@ export default function Sidebar({
       </div>
 
       {/* Footer - User Profile */}
-      <div className="flex-shrink-0 p-4 border-t border-[var(--glass-border)]">
+      <div className="shrink-0 p-3 md:p-4 border-t border-[var(--border)] bg-[var(--surface)]/50 backdrop-blur-sm">
         <UserMenu
           user={user}
           isCollapsed={isCollapsed}

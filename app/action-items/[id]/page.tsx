@@ -156,36 +156,36 @@ export default function ActionItemDetailPage({ params }: PageProps) {
 
   if (authLoading || !isAuthenticated) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-900">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="flex items-center justify-center min-h-screen bg-[var(--background)]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--primary)]"></div>
       </div>
     );
   }
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-900">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="flex items-center justify-center min-h-screen bg-[var(--background)]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--primary)]"></div>
       </div>
     );
   }
 
   if (error || !item) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white dark:bg-slate-800 rounded-lg shadow-lg p-8 text-center">
+      <div className="min-h-screen bg-[var(--background)] flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-[var(--surface)] rounded-xl shadow-lg p-8 text-center border border-[var(--border)]">
           <svg className="mx-auto h-12 w-12 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <h2 className="mt-4 text-xl font-semibold text-slate-900 dark:text-white">
+          <h2 className="mt-4 text-xl font-semibold text-[var(--foreground)]">
             Error Loading Action Item
           </h2>
-          <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+          <p className="mt-2 text-sm text-[var(--foreground-muted)]">
             {error}
           </p>
           <button
             onClick={() => router.push('/action-items')}
-            className="mt-6 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+            className="mt-6 px-4 py-2 text-sm font-medium text-white bg-[var(--primary)] rounded-lg hover:bg-[var(--primary-hover)] transition-colors"
           >
             Back to Action Items
           </button>
@@ -195,38 +195,38 @@ export default function ActionItemDetailPage({ params }: PageProps) {
   }
 
   const priorityColors = {
-    critical: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800',
-    high: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400 border-orange-200 dark:border-orange-800',
-    medium: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800',
-    low: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800',
+    critical: 'bg-red-600 text-white dark:bg-red-600 dark:text-white border-red-700 dark:border-red-500 font-bold shadow-sm',
+    high: 'bg-orange-600 text-white dark:bg-orange-600 dark:text-white border-orange-700 dark:border-orange-500 font-bold shadow-sm',
+    medium: 'bg-yellow-500 text-white dark:bg-yellow-600 dark:text-white border-yellow-600 dark:border-yellow-500 font-bold shadow-sm',
+    low: 'bg-green-600 text-white dark:bg-green-600 dark:text-white border-green-700 dark:border-green-500 font-bold shadow-sm',
   };
 
   const statusColors = {
-    not_started: 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300',
-    in_progress: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
-    completed: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-    cancelled: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
-    blocked: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400',
+    not_started: 'bg-gray-600 text-white dark:bg-gray-600 dark:text-white font-bold shadow-sm',
+    in_progress: 'bg-blue-600 text-white dark:bg-blue-600 dark:text-white font-bold shadow-sm',
+    completed: 'bg-green-600 text-white dark:bg-green-600 dark:text-white font-bold shadow-sm',
+    cancelled: 'bg-red-600 text-white dark:bg-red-600 dark:text-white font-bold shadow-sm',
+    blocked: 'bg-orange-600 text-white dark:bg-orange-600 dark:text-white font-bold shadow-sm',
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+    <div className="min-h-screen bg-[var(--background)]">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm">
+      <header className="sticky top-0 z-40 bg-[var(--background)]/80 backdrop-blur-xl border-b border-[var(--border)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between py-3 sm:py-4 gap-2 sm:gap-4">
             {/* Left: Back button + Title */}
             <div className="flex items-center space-x-2 sm:space-x-4 min-w-0">
               <button
                 onClick={() => router.push('/action-items')}
-                className="shrink-0 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors"
+                className="shrink-0 text-[var(--foreground-muted)] hover:text-[var(--foreground)] transition-colors"
                 aria-label="Back to action items"
               >
                 <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
               </button>
-              <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-900 dark:text-white truncate">
+              <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-[var(--foreground)] truncate">
                 Action Item Details
               </h1>
             </div>
@@ -237,7 +237,7 @@ export default function ActionItemDetailPage({ params }: PageProps) {
               {item.status !== 'completed' && item.status !== 'cancelled' && (
                 <button
                   onClick={handleComplete}
-                  className="hidden md:flex items-center px-3 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
+                  className="hidden md:flex items-center px-3 py-2 text-sm font-bold text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors shadow-sm"
                   title="Mark Complete"
                 >
                   <svg className="w-4 h-4 sm:w-5 sm:h-5 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -250,7 +250,7 @@ export default function ActionItemDetailPage({ params }: PageProps) {
               {/* Edit button */}
               <button
                 onClick={() => setShowEditModal(true)}
-                className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors"
+                className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm font-medium text-[var(--foreground)] bg-[var(--surface)] border border-[var(--border)] rounded-lg hover:bg-[var(--surface-hover)] transition-colors"
                 title="Edit"
               >
                 <span className="hidden sm:inline">Edit</span>
@@ -262,7 +262,7 @@ export default function ActionItemDetailPage({ params }: PageProps) {
               {/* Delete button */}
               <button
                 onClick={handleDelete}
-                className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
+                className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm font-medium text-white bg-red-600 dark:bg-red-700 rounded-lg hover:bg-red-700 dark:hover:bg-red-800 transition-colors"
                 title="Delete"
               >
                 <span className="hidden sm:inline">Delete</span>
@@ -281,67 +281,67 @@ export default function ActionItemDetailPage({ params }: PageProps) {
           {/* Main Details */}
           <div className="lg:col-span-2 space-y-6">
             {/* Task Card */}
-            <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm p-6">
+            <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] shadow-sm p-6">
               {/* Badges */}
               <div className="flex flex-wrap gap-2 mb-4">
-                <span className={`inline-flex items-center px-3 py-1 rounded-md text-sm font-medium border ${priorityColors[item.priority]}`}>
+                <span className={`inline-flex items-center px-3 py-1 rounded-lg text-sm border ${priorityColors[item.priority]}`}>
                   {item.priority.charAt(0).toUpperCase() + item.priority.slice(1)} Priority
                 </span>
-                <span className={`inline-flex items-center px-3 py-1 rounded-md text-sm font-medium ${statusColors[item.status]}`}>
+                <span className={`inline-flex items-center px-3 py-1 rounded-lg text-sm ${statusColors[item.status]}`}>
                   {item.status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                 </span>
                 {item.needs_review && (
-                  <span className="inline-flex items-center px-3 py-1 rounded-md text-sm font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
+                  <span className="inline-flex items-center px-3 py-1 rounded-lg text-sm font-bold bg-amber-600 text-white border border-amber-700 shadow-sm">
                     Needs Review
                   </span>
                 )}
                 {!item.is_manual && (
-                  <span className="inline-flex items-center px-3 py-1 rounded-md text-sm font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400">
+                  <span className="inline-flex items-center px-3 py-1 rounded-lg text-sm font-bold bg-purple-600 text-white border border-purple-700 shadow-sm">
                     AI Extracted
                   </span>
                 )}
               </div>
 
               {/* Description */}
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">
+              <h2 className="text-2xl font-bold text-[var(--foreground)] mb-6">
                 {item.task_description}
               </h2>
 
               {/* Details Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Assigned To</p>
-                  <p className="text-base text-slate-900 dark:text-white">
+                  <p className="text-sm font-semibold text-[var(--foreground-muted)] mb-1">Assigned To</p>
+                  <p className="text-base font-medium text-[var(--foreground)]">
                     {item.assigned_to}
                     {item.assigned_to_email && (
-                      <span className="block text-sm text-slate-600 dark:text-slate-400">{item.assigned_to_email}</span>
+                      <span className="block text-sm font-normal text-[var(--foreground-muted)]">{item.assigned_to_email}</span>
                     )}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Due Date</p>
-                  <p className="text-base text-slate-900 dark:text-white">
+                  <p className="text-sm font-semibold text-[var(--foreground-muted)] mb-1">Due Date</p>
+                  <p className="text-base font-medium text-[var(--foreground)]">
                     {item.due_date ? new Date(item.due_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'No due date'}
                   </p>
                 </div>
                 {item.project_name && (
                   <div>
-                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Project</p>
-                    <p className="text-base text-slate-900 dark:text-white">{item.project_name}</p>
+                    <p className="text-sm font-semibold text-[var(--foreground-muted)] mb-1">Project</p>
+                    <p className="text-base font-medium text-[var(--foreground)]">{item.project_name}</p>
                   </div>
                 )}
                 {item.confidence_score !== null && (
                   <div>
-                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Confidence Score</p>
-                    <p className="text-base text-slate-900 dark:text-white">
+                    <p className="text-sm font-semibold text-[var(--foreground-muted)] mb-1">Confidence Score</p>
+                    <p className="text-base font-medium text-[var(--foreground)]">
                       {Math.round(item.confidence_score * 100)}%
                     </p>
                   </div>
                 )}
                 {item.completed_at && (
                   <div className="sm:col-span-2">
-                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Completed At</p>
-                    <p className="text-base text-slate-900 dark:text-white">
+                    <p className="text-sm font-semibold text-[var(--foreground-muted)] mb-1">Completed At</p>
+                    <p className="text-base font-medium text-[var(--foreground)]">
                       {new Date(item.completed_at).toLocaleString('en-US', {
                         month: 'long',
                         day: 'numeric',
@@ -356,29 +356,29 @@ export default function ActionItemDetailPage({ params }: PageProps) {
 
               {/* Notes */}
               {item.notes && (
-                <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
-                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">Notes</p>
-                  <p className="text-base text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{item.notes}</p>
+                <div className="mt-6 pt-6 border-t border-[var(--border)]">
+                  <p className="text-sm font-semibold text-[var(--foreground-muted)] mb-2">Notes</p>
+                  <p className="text-base text-[var(--foreground)] whitespace-pre-wrap">{item.notes}</p>
                 </div>
               )}
 
               {/* Meeting Context */}
               {(item.meeting_title || item.source_quote) && (
-                <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
-                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-3">Meeting Context</p>
+                <div className="mt-6 pt-6 border-t border-[var(--border)]">
+                  <p className="text-sm font-semibold text-[var(--foreground-muted)] mb-3">Meeting Context</p>
                   {item.meeting_title && (
-                    <p className="text-base text-slate-900 dark:text-white mb-2">
+                    <p className="text-base text-[var(--foreground)] mb-2">
                       <strong>Meeting:</strong> {item.meeting_title}
                       {item.meeting_date && (
-                        <span className="text-slate-600 dark:text-slate-400 ml-2">
+                        <span className="text-[var(--foreground-muted)] ml-2">
                           ({new Date(item.meeting_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })})
                         </span>
                       )}
                     </p>
                   )}
                   {item.source_quote && (
-                    <div className="mt-3 p-4 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
-                      <p className="text-sm text-slate-700 dark:text-slate-300 italic">"{item.source_quote}"</p>
+                    <div className="mt-3 p-4 bg-[var(--surface-hover)] rounded-lg border border-[var(--border)]">
+                      <p className="text-sm text-[var(--foreground)] italic font-medium">"{item.source_quote}"</p>
                     </div>
                   )}
                 </div>
@@ -386,25 +386,25 @@ export default function ActionItemDetailPage({ params }: PageProps) {
             </div>
 
             {/* Dependencies */}
-            <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm p-6">
+            <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] shadow-sm p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Dependencies</h3>
+                <h3 className="text-lg font-bold text-[var(--foreground)]">Dependencies</h3>
                 <button
                   onClick={() => setShowDependencyModal(true)}
-                  className="px-3 py-1.5 text-sm font-medium text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+                  className="px-3 py-1.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors shadow-sm"
                 >
                   Add Dependency
                 </button>
               </div>
               {dependencies.length === 0 ? (
-                <p className="text-sm text-slate-500 dark:text-slate-400">No dependencies</p>
+                <p className="text-sm text-[var(--foreground-muted)]">No dependencies</p>
               ) : (
                 <div className="space-y-3">
                   {dependencies.map((dep) => (
-                    <div key={dep.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
+                    <div key={dep.id} className="flex items-center justify-between p-3 bg-[var(--surface-hover)] rounded-lg border border-[var(--border)]">
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-slate-900 dark:text-white">{dep.depends_on.task_description}</p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                        <p className="text-sm font-semibold text-[var(--foreground)]">{dep.depends_on.task_description}</p>
+                        <p className="text-xs text-[var(--foreground-muted)] mt-1 font-medium">
                           Assigned to: {dep.depends_on.assigned_to} • Status: {dep.depends_on.status.replace('_', ' ')}
                         </p>
                       </div>
@@ -424,41 +424,41 @@ export default function ActionItemDetailPage({ params }: PageProps) {
             </div>
 
             {/* Feedback */}
-            <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm p-6">
+            <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] shadow-sm p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Feedback History</h3>
+                <h3 className="text-lg font-bold text-[var(--foreground)]">Feedback History</h3>
                 <button
                   onClick={() => setShowFeedbackModal(true)}
-                  className="px-3 py-1.5 text-sm font-medium text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+                  className="px-3 py-1.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors shadow-sm"
                 >
                   Add Feedback
                 </button>
               </div>
               {feedbacks.length === 0 ? (
-                <p className="text-sm text-slate-500 dark:text-slate-400">No feedback yet</p>
+                <p className="text-sm text-[var(--foreground-muted)]">No feedback yet</p>
               ) : (
                 <div className="space-y-3">
                   {feedbacks.map((feedback) => (
-                    <div key={feedback.id} className="p-4 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
+                    <div key={feedback.id} className="p-4 bg-[var(--surface-hover)] rounded-lg border border-[var(--border)]">
                       <div className="flex items-center justify-between mb-2">
-                        <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold shadow-sm ${
                           feedback.feedback_type === 'accurate'
-                            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                            : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                            ? 'bg-green-600 text-white border border-green-700'
+                            : 'bg-red-600 text-white border border-red-700'
                         }`}>
                           {feedback.feedback_type === 'accurate' ? 'Accurate' : 'Incorrect'}
                         </span>
-                        <span className="text-xs text-slate-500 dark:text-slate-400">
+                        <span className="text-xs text-[var(--foreground-muted)]">
                           {new Date(feedback.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                         </span>
                       </div>
                       {feedback.error_category && (
-                        <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                        <p className="text-sm font-semibold text-[var(--foreground)] mb-1">
                           Error: {feedback.error_category.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                         </p>
                       )}
                       {feedback.comment && (
-                        <p className="text-sm text-slate-600 dark:text-slate-400">{feedback.comment}</p>
+                        <p className="text-sm text-[var(--foreground-muted)]">{feedback.comment}</p>
                       )}
                     </div>
                   ))}
@@ -470,12 +470,12 @@ export default function ActionItemDetailPage({ params }: PageProps) {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Metadata */}
-            <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm p-6">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Metadata</h3>
+            <div className="bg-[var(--surface)] rounded-lg border border-[var(--border)] shadow-sm p-6">
+              <h3 className="text-lg font-bold text-[var(--foreground)] mb-4">Metadata</h3>
               <div className="space-y-3 text-sm">
                 <div>
-                  <p className="text-slate-500 dark:text-slate-400 mb-1">Created</p>
-                  <p className="text-slate-900 dark:text-white">
+                  <p className="text-[var(--foreground-muted)] mb-1 font-medium">Created</p>
+                  <p className="text-[var(--foreground)] font-semibold">
                     {new Date(item.created_at).toLocaleString('en-US', {
                       month: 'short',
                       day: 'numeric',
@@ -486,8 +486,8 @@ export default function ActionItemDetailPage({ params }: PageProps) {
                   </p>
                 </div>
                 <div>
-                  <p className="text-slate-500 dark:text-slate-400 mb-1">Last Updated</p>
-                  <p className="text-slate-900 dark:text-white">
+                  <p className="text-[var(--foreground-muted)] mb-1 font-medium">Last Updated</p>
+                  <p className="text-[var(--foreground)] font-semibold">
                     {new Date(item.updated_at).toLocaleString('en-US', {
                       month: 'short',
                       day: 'numeric',
@@ -498,15 +498,15 @@ export default function ActionItemDetailPage({ params }: PageProps) {
                   </p>
                 </div>
                 <div>
-                  <p className="text-slate-500 dark:text-slate-400 mb-1">Type</p>
-                  <p className="text-slate-900 dark:text-white">
+                  <p className="text-[var(--foreground-muted)] mb-1 font-medium">Type</p>
+                  <p className="text-[var(--foreground)] font-semibold">
                     {item.is_manual ? 'Manually Created' : 'AI Extracted'}
                   </p>
                 </div>
                 {item.meeting_id && (
                   <div>
-                    <p className="text-slate-500 dark:text-slate-400 mb-1">Meeting ID</p>
-                    <p className="text-slate-900 dark:text-white font-mono text-xs">{item.meeting_id}</p>
+                    <p className="text-[var(--foreground-muted)] mb-1 font-medium">Meeting ID</p>
+                    <p className="text-[var(--foreground)] font-mono text-xs font-semibold">{item.meeting_id}</p>
                   </div>
                 )}
               </div>

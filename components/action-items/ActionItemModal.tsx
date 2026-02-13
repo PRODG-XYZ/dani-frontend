@@ -116,20 +116,20 @@ export function ActionItemModal({ item, onClose, onSubmit }: ActionItemModalProp
       <div className="flex min-h-screen items-center justify-center p-4 sm:p-0">
         {/* Backdrop */}
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
           onClick={onClose}
         ></div>
 
         {/* Modal */}
-        <div className="relative bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-2xl w-full mx-auto max-h-[90vh] overflow-y-auto">
+        <div className="relative bg-[var(--surface)] rounded-lg shadow-xl max-w-2xl w-full mx-auto max-h-[90vh] overflow-y-auto">
           {/* Header */}
-          <div className="sticky top-0 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-4 flex items-center justify-between z-10">
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
+          <div className="sticky top-0 bg-[var(--surface)] border-b border-[var(--border)] px-6 py-4 flex items-center justify-between z-10">
+            <h2 className="text-xl font-semibold text-[var(--foreground)]">
               {item ? 'Edit Action Item' : 'New Action Item'}
             </h2>
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+              className="text-[var(--foreground-muted)] hover:text-[var(--foreground)] transition-colors"
               aria-label="Close"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -143,14 +143,14 @@ export function ActionItemModal({ item, onClose, onSubmit }: ActionItemModalProp
             {/* Template Selector - Only show for new items */}
             {!item && (
               <div>
-                <label htmlFor="template" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label htmlFor="template" className="block text-sm font-medium text-[var(--foreground)] mb-2">
                   Start with a template (optional)
                 </label>
                 <select
                   id="template"
                   value={selectedTemplate}
                   onChange={(e) => handleTemplateChange(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-900 dark:text-white transition-colors"
+                  className="w-full px-3 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] bg-[var(--background)] text-[var(--foreground)] transition-colors"
                 >
                   {TASK_TEMPLATES.map((template) => (
                     <option key={template.value} value={template.value}>
@@ -158,7 +158,7 @@ export function ActionItemModal({ item, onClose, onSubmit }: ActionItemModalProp
                     </option>
                   ))}
                 </select>
-                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                <p className="mt-1 text-xs text-[var(--foreground-muted)]">
                   Choose a template to quickly fill in common task types
                 </p>
               </div>
@@ -166,7 +166,7 @@ export function ActionItemModal({ item, onClose, onSubmit }: ActionItemModalProp
 
             {/* Task Description */}
             <div>
-              <label htmlFor="task_description" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              <label htmlFor="task_description" className="block text-sm font-medium text-[var(--foreground)] mb-2">
                 Task Description *
               </label>
               <textarea
@@ -174,17 +174,17 @@ export function ActionItemModal({ item, onClose, onSubmit }: ActionItemModalProp
                 rows={4}
                 value={formData.task_description}
                 onChange={(e) => handleChange('task_description', e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-900 dark:text-white transition-colors ${
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] bg-[var(--background)] text-[var(--foreground)] placeholder:text-[var(--foreground-muted)] transition-colors ${
                   errors.task_description
-                    ? 'border-red-500 dark:border-red-500'
-                    : 'border-slate-300 dark:border-slate-600'
+                    ? 'border-red-500'
+                    : 'border-[var(--border)]'
                 }`}
                 placeholder="Describe the action item..."
               />
               {errors.task_description && (
                 <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.task_description}</p>
               )}
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              <p className="mt-1 text-xs text-[var(--foreground-muted)]">
                 {formData.task_description.length}/2000 characters
               </p>
             </div>
@@ -192,7 +192,7 @@ export function ActionItemModal({ item, onClose, onSubmit }: ActionItemModalProp
             {/* Assignee */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="assigned_to" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label htmlFor="assigned_to" className="block text-sm font-medium text-[var(--foreground)] mb-2">
                   Assigned To *
                 </label>
                 <input
@@ -200,10 +200,10 @@ export function ActionItemModal({ item, onClose, onSubmit }: ActionItemModalProp
                   id="assigned_to"
                   value={formData.assigned_to}
                   onChange={(e) => handleChange('assigned_to', e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-900 dark:text-white transition-colors ${
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] bg-[var(--background)] text-[var(--foreground)] placeholder:text-[var(--foreground-muted)] transition-colors ${
                     errors.assigned_to
-                      ? 'border-red-500 dark:border-red-500'
-                      : 'border-slate-300 dark:border-slate-600'
+                      ? 'border-red-500'
+                      : 'border-[var(--border)]'
                   }`}
                   placeholder="Name"
                 />
@@ -213,7 +213,7 @@ export function ActionItemModal({ item, onClose, onSubmit }: ActionItemModalProp
               </div>
 
               <div>
-                <label htmlFor="assigned_to_email" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label htmlFor="assigned_to_email" className="block text-sm font-medium text-[var(--foreground)] mb-2">
                   Assignee Email
                 </label>
                 <input
@@ -221,10 +221,10 @@ export function ActionItemModal({ item, onClose, onSubmit }: ActionItemModalProp
                   id="assigned_to_email"
                   value={formData.assigned_to_email || ''}
                   onChange={(e) => handleChange('assigned_to_email', e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-900 dark:text-white transition-colors ${
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] bg-[var(--background)] text-[var(--foreground)] placeholder:text-[var(--foreground-muted)] transition-colors ${
                     errors.assigned_to_email
-                      ? 'border-red-500 dark:border-red-500'
-                      : 'border-slate-300 dark:border-slate-600'
+                      ? 'border-red-500'
+                      : 'border-[var(--border)]'
                   }`}
                   placeholder="email@example.com"
                 />
@@ -237,7 +237,7 @@ export function ActionItemModal({ item, onClose, onSubmit }: ActionItemModalProp
             {/* Due Date & Priority */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="due_date" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label htmlFor="due_date" className="block text-sm font-medium text-[var(--foreground)] mb-2">
                   Due Date
                 </label>
                 <input
@@ -246,19 +246,19 @@ export function ActionItemModal({ item, onClose, onSubmit }: ActionItemModalProp
                   value={formData.due_date || ''}
                   onChange={(e) => handleChange('due_date', e.target.value)}
                   min={new Date().toISOString().split('T')[0]}
-                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-900 dark:text-white transition-colors"
+                  className="w-full px-3 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] bg-[var(--background)] text-[var(--foreground)] transition-colors"
                 />
               </div>
 
               <div>
-                <label htmlFor="priority" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label htmlFor="priority" className="block text-sm font-medium text-[var(--foreground)] mb-2">
                   Priority
                 </label>
                 <select
                   id="priority"
                   value={formData.priority}
                   onChange={(e) => handleChange('priority', e.target.value as ActionItemPriority)}
-                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-900 dark:text-white transition-colors"
+                  className="w-full px-3 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] bg-[var(--background)] text-[var(--foreground)] transition-colors"
                 >
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
@@ -271,14 +271,14 @@ export function ActionItemModal({ item, onClose, onSubmit }: ActionItemModalProp
             {/* Status & Project */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="status" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label htmlFor="status" className="block text-sm font-medium text-[var(--foreground)] mb-2">
                   Status
                 </label>
                 <select
                   id="status"
                   value={formData.status}
                   onChange={(e) => handleChange('status', e.target.value as ActionItemStatus)}
-                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-900 dark:text-white transition-colors"
+                  className="w-full px-3 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] bg-[var(--background)] text-[var(--foreground)] transition-colors"
                 >
                   <option value="not_started">Not Started</option>
                   <option value="in_progress">In Progress</option>
@@ -288,7 +288,7 @@ export function ActionItemModal({ item, onClose, onSubmit }: ActionItemModalProp
               </div>
 
               <div>
-                <label htmlFor="project_name" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label htmlFor="project_name" className="block text-sm font-medium text-[var(--foreground)] mb-2">
                   Project
                 </label>
                 <input
@@ -296,7 +296,7 @@ export function ActionItemModal({ item, onClose, onSubmit }: ActionItemModalProp
                   id="project_name"
                   value={formData.project_name || ''}
                   onChange={(e) => handleChange('project_name', e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-900 dark:text-white transition-colors"
+                  className="w-full px-3 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] bg-[var(--background)] text-[var(--foreground)] placeholder:text-[var(--foreground-muted)] transition-colors"
                   placeholder="Project name"
                 />
               </div>
@@ -304,7 +304,7 @@ export function ActionItemModal({ item, onClose, onSubmit }: ActionItemModalProp
 
             {/* Notes */}
             <div>
-              <label htmlFor="notes" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              <label htmlFor="notes" className="block text-sm font-medium text-[var(--foreground)] mb-2">
                 Notes
               </label>
               <textarea
@@ -312,7 +312,7 @@ export function ActionItemModal({ item, onClose, onSubmit }: ActionItemModalProp
                 rows={3}
                 value={formData.notes || ''}
                 onChange={(e) => handleChange('notes', e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-900 dark:text-white transition-colors"
+                className="w-full px-3 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] bg-[var(--background)] text-[var(--foreground)] placeholder:text-[var(--foreground-muted)] transition-colors"
                 placeholder="Additional notes or context..."
               />
             </div>
@@ -329,14 +329,14 @@ export function ActionItemModal({ item, onClose, onSubmit }: ActionItemModalProp
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors"
+                className="flex-1 px-4 py-2 text-sm font-medium text-[var(--foreground)] bg-[var(--surface)] border border-[var(--border)] rounded-lg hover:bg-[var(--surface-hover)] transition-colors"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors"
+                className="flex-1 px-4 py-2 text-sm font-medium text-white bg-[var(--primary)] rounded-lg hover:bg-[var(--primary-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
               >
                 {isSubmitting ? (
                   <span className="flex items-center justify-center">

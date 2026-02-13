@@ -14,18 +14,18 @@ interface ActionItemCardProps {
 }
 
 const priorityColors = {
-  critical: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800',
-  high: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400 border-orange-200 dark:border-orange-800',
-  medium: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800',
-  low: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800',
+  critical: 'bg-red-600 text-white dark:bg-red-600 dark:text-white border-red-700 dark:border-red-500 font-bold shadow-sm',
+  high: 'bg-orange-600 text-white dark:bg-orange-600 dark:text-white border-orange-700 dark:border-orange-500 font-bold shadow-sm',
+  medium: 'bg-yellow-500 text-white dark:bg-yellow-600 dark:text-white border-yellow-600 dark:border-yellow-500 font-bold shadow-sm',
+  low: 'bg-green-600 text-white dark:bg-green-600 dark:text-white border-green-700 dark:border-green-500 font-bold shadow-sm',
 };
 
 const statusColors = {
-  not_started: 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300',
-  in_progress: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
-  completed: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-  cancelled: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
-  blocked: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400',
+  not_started: 'bg-gray-600 text-white dark:bg-gray-600 dark:text-white font-bold shadow-sm',
+  in_progress: 'bg-blue-600 text-white dark:bg-blue-600 dark:text-white font-bold shadow-sm',
+  completed: 'bg-green-600 text-white dark:bg-green-600 dark:text-white font-bold shadow-sm',
+  cancelled: 'bg-red-600 text-white dark:bg-red-600 dark:text-white font-bold shadow-sm',
+  blocked: 'bg-orange-600 text-white dark:bg-orange-600 dark:text-white font-bold shadow-sm',
 };
 
 export function ActionItemCard({ item, onEdit, onDelete, onComplete, onUpdate }: ActionItemCardProps) {
@@ -111,7 +111,7 @@ export function ActionItemCard({ item, onEdit, onDelete, onComplete, onUpdate }:
   };
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
+    <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] shadow-sm hover:shadow-lg transition-all duration-200 hover:border-[var(--primary)]/20">
       <div className="p-4 sm:p-6">
         {/* Header */}
         <div className="flex items-start gap-3 mb-4">
@@ -121,7 +121,7 @@ export function ActionItemCard({ item, onEdit, onDelete, onComplete, onUpdate }:
               <button
                 onClick={handleQuickComplete}
                 disabled={isUpdating}
-                className="w-5 h-5 rounded border-2 border-slate-300 dark:border-slate-600 hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 flex items-center justify-center transition-colors disabled:opacity-50"
+                className="w-5 h-5 rounded border-2 border-[var(--border)] hover:border-[var(--primary)] hover:bg-[var(--primary)]/10 flex items-center justify-center transition-colors disabled:opacity-50"
                 aria-label="Mark as complete"
                 title="Quick complete"
               />
@@ -137,18 +137,18 @@ export function ActionItemCard({ item, onEdit, onDelete, onComplete, onUpdate }:
                 {item.status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
               </span>
               {item.needs_review && (
-                <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
+                <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-bold bg-amber-600 text-white border border-amber-700 shadow-sm">
                   Needs Review
                 </span>
               )}
               {!item.is_manual && (
-                <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400">
+                <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-bold bg-purple-600 text-white border border-purple-700 shadow-sm">
                   AI Extracted
                 </span>
               )}
             </div>
             <h3
-              className="text-base sm:text-lg font-semibold text-slate-900 dark:text-white mb-2 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors line-clamp-2"
+              className="text-base sm:text-lg font-semibold text-[var(--foreground)] mb-2 cursor-pointer hover:text-[var(--primary)] transition-colors line-clamp-2"
               onClick={() => router.push(`/action-items/${item.id}`)}
             >
               {item.task_description}
@@ -163,7 +163,7 @@ export function ActionItemCard({ item, onEdit, onDelete, onComplete, onUpdate }:
                   e.stopPropagation();
                   setShowMenu(!showMenu);
                 }}
-                className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                className="p-2 text-[var(--foreground-muted)] hover:text-[var(--foreground)] rounded-lg hover:bg-[var(--surface-hover)] transition-colors"
                 aria-label="Action menu"
                 aria-expanded={showMenu}
               >
@@ -172,13 +172,13 @@ export function ActionItemCard({ item, onEdit, onDelete, onComplete, onUpdate }:
                 </svg>
               </button>
               {showMenu && (
-                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 z-10">
+                <div className="absolute right-0 mt-2 w-48 bg-[var(--surface)] rounded-xl shadow-lg border border-[var(--border)] z-10 overflow-hidden">
                   <button
                     onClick={() => {
                       setShowMenu(false);
                       onEdit(item);
                     }}
-                    className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-t-lg transition-colors"
+                    className="w-full text-left px-4 py-2.5 text-sm text-[var(--foreground)] hover:bg-[var(--surface-hover)] transition-colors"
                   >
                     Edit
                   </button>
@@ -187,7 +187,7 @@ export function ActionItemCard({ item, onEdit, onDelete, onComplete, onUpdate }:
                       setShowMenu(false);
                       router.push(`/action-items/${item.id}`);
                     }}
-                    className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                    className="w-full text-left px-4 py-2.5 text-sm text-[var(--foreground)] hover:bg-[var(--surface-hover)] transition-colors"
                   >
                     View Details
                   </button>
@@ -202,7 +202,7 @@ export function ActionItemCard({ item, onEdit, onDelete, onComplete, onUpdate }:
                         }
                         await onComplete(item.id);
                       }}
-                      className="w-full text-left px-4 py-2 text-sm text-green-700 dark:text-green-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                      className="w-full text-left px-4 py-2.5 text-sm text-green-600 dark:text-green-400 hover:bg-[var(--surface-hover)] transition-colors"
                     >
                       Mark Complete
                     </button>
@@ -213,7 +213,7 @@ export function ActionItemCard({ item, onEdit, onDelete, onComplete, onUpdate }:
                         setShowMenu(false);
                         setShowBlockedModal(true);
                       }}
-                      className="w-full text-left px-4 py-2 text-sm text-orange-700 dark:text-orange-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                      className="w-full text-left px-4 py-2.5 text-sm text-orange-600 dark:text-orange-400 hover:bg-[var(--surface-hover)] transition-colors"
                     >
                       Mark as Blocked
                     </button>
@@ -223,7 +223,7 @@ export function ActionItemCard({ item, onEdit, onDelete, onComplete, onUpdate }:
                       setShowMenu(false);
                       onDelete(item.id);
                     }}
-                    className="w-full text-left px-4 py-2 text-sm text-red-700 dark:text-red-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-b-lg transition-colors"
+                    className="w-full text-left px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-[var(--surface-hover)] transition-colors"
                   >
                     Delete
                   </button>
@@ -237,13 +237,13 @@ export function ActionItemCard({ item, onEdit, onDelete, onComplete, onUpdate }:
         <div className="space-y-3">
           {/* Assignee */}
           <div className="flex items-center text-sm">
-            <svg className="w-4 h-4 text-slate-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-[var(--foreground-muted)] mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
-            <span className="text-slate-600 dark:text-slate-400 truncate">
+            <span className="text-[var(--foreground)] font-medium truncate">
               {item.assigned_to}
               {item.assigned_to_email && (
-                <span className="text-slate-500 dark:text-slate-500 ml-1">
+                <span className="text-[var(--foreground-muted)] font-normal ml-1">
                   ({item.assigned_to_email})
                 </span>
               )}
@@ -252,10 +252,10 @@ export function ActionItemCard({ item, onEdit, onDelete, onComplete, onUpdate }:
 
           {/* Due Date */}
           <div className="flex items-center text-sm">
-            <svg className="w-4 h-4 text-slate-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-[var(--foreground-muted)] mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
-            <span className={`${isOverdue ? 'text-red-600 dark:text-red-400 font-medium' : 'text-slate-600 dark:text-slate-400'}`}>
+            <span className={`font-medium ${isOverdue ? 'text-red-600 dark:text-red-400' : 'text-[var(--foreground)]'}`}>
               {formatDate(item.due_date)}
             </span>
           </div>
@@ -263,30 +263,30 @@ export function ActionItemCard({ item, onEdit, onDelete, onComplete, onUpdate }:
           {/* Project */}
           {item.project_name && (
             <div className="flex items-center text-sm">
-              <svg className="w-4 h-4 text-slate-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-[var(--foreground-muted)] mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
               </svg>
-              <span className="text-slate-600 dark:text-slate-400 truncate">{item.project_name}</span>
+              <span className="text-[var(--foreground)] font-medium truncate">{item.project_name}</span>
             </div>
           )}
 
           {/* Meeting Info */}
           {item.meeting_title && (
             <div className="flex items-center text-sm">
-              <svg className="w-4 h-4 text-slate-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-[var(--foreground-muted)] mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
               </svg>
-              <span className="text-slate-600 dark:text-slate-400 truncate">{item.meeting_title}</span>
+              <span className="text-[var(--foreground)] font-medium truncate">{item.meeting_title}</span>
             </div>
           )}
 
           {/* Confidence Score */}
           {item.confidence_score !== null && (
             <div className="flex items-center text-sm">
-              <svg className="w-4 h-4 text-slate-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-[var(--foreground-muted)] mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
-              <span className="text-slate-600 dark:text-slate-400">
+              <span className="text-[var(--foreground)] font-medium">
                 Confidence: {Math.round(item.confidence_score * 100)}%
               </span>
             </div>
@@ -294,8 +294,8 @@ export function ActionItemCard({ item, onEdit, onDelete, onComplete, onUpdate }:
 
           {/* Notes */}
           {item.notes && (
-            <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
-              <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-2">
+            <div className="pt-2 border-t border-[var(--border)]">
+              <p className="text-sm text-[var(--foreground)] font-normal line-clamp-2">
                 {item.notes}
               </p>
             </div>
@@ -304,13 +304,13 @@ export function ActionItemCard({ item, onEdit, onDelete, onComplete, onUpdate }:
 
         {/* Quick Status Buttons */}
         {item.status !== 'completed' && item.status !== 'cancelled' && item.status !== 'blocked' && (
-          <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+          <div className="mt-4 pt-4 border-t border-[var(--border)]">
             <div className="flex flex-wrap gap-2">
               {item.status === 'not_started' && (
                 <button
                   onClick={() => handleStatusChange('in_progress')}
                   disabled={isUpdating}
-                  className="flex-1 min-w-[140px] px-3 py-2 text-sm font-medium text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors disabled:opacity-50"
+                  className="flex-1 min-w-[140px] px-3 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 shadow-sm"
                 >
                   Start Working
                 </button>
@@ -326,7 +326,7 @@ export function ActionItemCard({ item, onEdit, onDelete, onComplete, onUpdate }:
                     await onComplete(item.id);
                   }}
                   disabled={isUpdating}
-                  className="flex-1 min-w-[140px] px-3 py-2 text-sm font-medium text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors disabled:opacity-50"
+                  className="flex-1 min-w-[140px] px-3 py-2 text-sm font-bold text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors disabled:opacity-50 shadow-sm"
                 >
                   Complete
                 </button>
@@ -334,7 +334,7 @@ export function ActionItemCard({ item, onEdit, onDelete, onComplete, onUpdate }:
               <button
                 onClick={() => handleStatusChange('cancelled')}
                 disabled={isUpdating}
-                className="px-3 py-2 text-sm font-medium text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors disabled:opacity-50"
+                className="px-3 py-2 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors disabled:opacity-50 shadow-sm"
               >
                 Cancel
               </button>
@@ -344,7 +344,7 @@ export function ActionItemCard({ item, onEdit, onDelete, onComplete, onUpdate }:
 
         {/* Blocked State with Unblock Button */}
         {item.status === 'blocked' && (
-          <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+          <div className="mt-4 pt-4 border-t border-[var(--border)]">
             <div className="flex items-start gap-2 mb-3">
               <svg className="w-5 h-5 text-orange-600 dark:text-orange-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -361,7 +361,7 @@ export function ActionItemCard({ item, onEdit, onDelete, onComplete, onUpdate }:
             <button
               onClick={() => handleStatusChange('not_started')}
               disabled={isUpdating}
-              className="w-full px-3 py-2 text-sm font-medium text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors disabled:opacity-50"
+              className="w-full px-3 py-2 text-sm font-bold text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors disabled:opacity-50 shadow-sm"
             >
               Unblock Task
             </button>
@@ -370,8 +370,8 @@ export function ActionItemCard({ item, onEdit, onDelete, onComplete, onUpdate }:
 
         {/* Completed/Cancelled State */}
         {(item.status === 'completed' || item.status === 'cancelled') && (
-          <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-            <div className="text-sm text-slate-500 dark:text-slate-400">
+          <div className="mt-4 pt-4 border-t border-[var(--border)]">
+            <div className="text-sm text-[var(--foreground-muted)]">
               {item.status === 'completed' && item.completed_at && (
                 <span>
                   Completed {new Date(item.completed_at).toLocaleDateString('en-US', {

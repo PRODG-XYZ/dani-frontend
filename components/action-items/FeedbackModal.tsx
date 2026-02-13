@@ -63,20 +63,20 @@ export function FeedbackModal({ onClose, onSubmit }: FeedbackModalProps) {
       <div className="flex min-h-screen items-center justify-center p-4 sm:p-0">
         {/* Backdrop */}
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
           onClick={onClose}
         ></div>
 
         {/* Modal */}
-        <div className="relative bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-lg w-full mx-auto max-h-[90vh] overflow-y-auto">
+        <div className="relative bg-[var(--surface)] rounded-lg shadow-xl max-w-lg w-full mx-auto max-h-[90vh] overflow-y-auto">
           {/* Header */}
-          <div className="sticky top-0 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-4 flex items-center justify-between z-10">
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
+          <div className="sticky top-0 bg-[var(--surface)] border-b border-[var(--border)] px-6 py-4 flex items-center justify-between z-10">
+            <h2 className="text-xl font-bold text-[var(--foreground)]">
               Submit Feedback
             </h2>
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+              className="text-[var(--foreground-muted)] hover:text-[var(--foreground)] transition-colors"
               aria-label="Close"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -87,45 +87,45 @@ export function FeedbackModal({ onClose, onSubmit }: FeedbackModalProps) {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
-            <p className="text-sm text-slate-600 dark:text-slate-400">
+            <p className="text-sm text-[var(--foreground-muted)]">
               Provide feedback on the accuracy of this action item extraction.
             </p>
 
             {/* Feedback Type */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
+              <label className="block text-sm font-medium text-[var(--foreground)] mb-3">
                 Feedback Type *
               </label>
               <div className="space-y-2">
-                <label className="flex items-start p-4 border-2 rounded-lg cursor-pointer transition-colors hover:bg-slate-50 dark:hover:bg-slate-700">
+                <label className="flex items-start p-4 border-2 border-[var(--border)] rounded-lg cursor-pointer transition-colors hover:bg-[var(--surface-hover)]">
                   <input
                     type="radio"
                     name="feedback_type"
                     value="accurate"
                     checked={formData.feedback_type === 'accurate'}
                     onChange={(e) => handleFeedbackTypeChange(e.target.value as FeedbackType)}
-                    className="mt-1 mr-3 h-4 w-4 text-green-600 focus:ring-green-500 border-slate-300 dark:border-slate-600"
+                    className="mt-1 mr-3 h-4 w-4 text-green-600 focus:ring-green-500 border-[var(--border)]"
                   />
                   <div className="flex-1">
-                    <p className="font-medium text-slate-900 dark:text-white">Accurate</p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                    <p className="font-medium text-[var(--foreground)]">Accurate</p>
+                    <p className="text-sm text-[var(--foreground-muted)]">
                       This action item was correctly extracted and all details are accurate.
                     </p>
                   </div>
                 </label>
 
-                <label className="flex items-start p-4 border-2 rounded-lg cursor-pointer transition-colors hover:bg-slate-50 dark:hover:bg-slate-700">
+                <label className="flex items-start p-4 border-2 border-[var(--border)] rounded-lg cursor-pointer transition-colors hover:bg-[var(--surface-hover)]">
                   <input
                     type="radio"
                     name="feedback_type"
                     value="incorrect"
                     checked={formData.feedback_type === 'incorrect'}
                     onChange={(e) => handleFeedbackTypeChange(e.target.value as FeedbackType)}
-                    className="mt-1 mr-3 h-4 w-4 text-red-600 focus:ring-red-500 border-slate-300 dark:border-slate-600"
+                    className="mt-1 mr-3 h-4 w-4 text-red-600 focus:ring-red-500 border-[var(--border)]"
                   />
                   <div className="flex-1">
-                    <p className="font-medium text-slate-900 dark:text-white">Incorrect</p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                    <p className="font-medium text-[var(--foreground)]">Incorrect</p>
+                    <p className="text-sm text-[var(--foreground-muted)]">
                       This action item has errors or was incorrectly extracted.
                     </p>
                   </div>
@@ -136,14 +136,14 @@ export function FeedbackModal({ onClose, onSubmit }: FeedbackModalProps) {
             {/* Error Category (shown only when feedback type is incorrect) */}
             {formData.feedback_type === 'incorrect' && (
               <div>
-                <label htmlFor="error_category" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label htmlFor="error_category" className="block text-sm font-medium text-[var(--foreground)] mb-2">
                   Error Category *
                 </label>
                 <select
                   id="error_category"
                   value={formData.error_category || ''}
                   onChange={(e) => setFormData({ ...formData, error_category: (e.target.value as ErrorCategory) || null })}
-                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-900 dark:text-white transition-colors"
+                  className="w-full px-3 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] bg-[var(--background)] text-[var(--foreground)] transition-colors"
                 >
                   <option value="">Select an error category</option>
                   <option value="wrong_owner">Wrong Owner - Assigned to incorrect person</option>
@@ -156,7 +156,7 @@ export function FeedbackModal({ onClose, onSubmit }: FeedbackModalProps) {
 
             {/* Comment */}
             <div>
-              <label htmlFor="comment" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              <label htmlFor="comment" className="block text-sm font-medium text-[var(--foreground)] mb-2">
                 Comment {formData.feedback_type === 'incorrect' ? '(Optional)' : ''}
               </label>
               <textarea
@@ -165,7 +165,7 @@ export function FeedbackModal({ onClose, onSubmit }: FeedbackModalProps) {
                 value={formData.comment || ''}
                 onChange={(e) => setFormData({ ...formData, comment: e.target.value || null })}
                 placeholder="Add any additional details or context..."
-                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-900 dark:text-white transition-colors"
+                className="w-full px-3 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] bg-[var(--background)] text-[var(--foreground)] placeholder:text-[var(--foreground-muted)] transition-colors"
               />
             </div>
 
@@ -181,14 +181,14 @@ export function FeedbackModal({ onClose, onSubmit }: FeedbackModalProps) {
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors"
+                className="flex-1 px-4 py-2 text-sm font-medium text-[var(--foreground)] bg-[var(--surface)] border border-[var(--border)] rounded-lg hover:bg-[var(--surface-hover)] transition-colors"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors"
+                className="flex-1 px-4 py-2 text-sm font-bold text-white bg-[var(--primary)] shadow-sm rounded-lg hover:bg-[var(--primary-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {isSubmitting ? (
                   <span className="flex items-center justify-center">

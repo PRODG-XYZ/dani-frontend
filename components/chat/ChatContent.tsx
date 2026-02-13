@@ -1447,13 +1447,13 @@ export default function ChatContent() {
             onDeleteConversation={handleDeleteConversation}
           />
         ) : (
-          <div className="relative flex-1 flex flex-col overflow-hidden bg-white">
-          {/* Content Area */}
+          <div className="relative flex-1 flex flex-col h-full bg-white">
+          {/* Content Area - Scrollable messages */}
           <div className="flex-1 overflow-y-auto">
             {currentConversation.messages.length === 0 ? (
               <BeeBotEmptyState userName={user?.name || null} />
             ) : (
-              <div className="max-w-5xl mx-auto py-4 px-8 w-full pb-72">
+              <div className="max-w-4xl mx-auto py-4 px-4 md:px-8 w-full pb-6">
                 {currentConversation.messages.map((message, index) => (
                   <ChatMessage
                     key={message.id}
@@ -1508,8 +1508,8 @@ export default function ChatContent() {
             )}
           </div>
 
-          {/* Fixed Input at Bottom */}
-          <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100">
+          {/* Input at Bottom of Chat Area - Floating */}
+          <div className="shrink-0 px-4 py-6">
             <BeeBotInput
               onSendMessage={(msg, attachments) => handleSendMessage(msg, undefined, attachments)}
               onGenerateImage={handleGenerateImage}

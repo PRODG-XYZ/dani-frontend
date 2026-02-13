@@ -77,8 +77,8 @@ export default function ChatMessage({ message, isLoading, isSelected, isLastMess
 
   return (
     <div className={`flex flex-col pt-3 px-8 animate-fade-in-up ${isLastMessage ? 'pb-8' : 'pb-3'}`}>
-      <div className="max-w-5xl w-full">
-        <div className="flex items-start gap-3">
+      <div className={`max-w-5xl w-full ${isUser ? 'ml-auto' : ''}`}>
+        <div className={`flex items-start gap-3 ${isUser ? 'flex-row-reverse' : ''}`}>
           {/* Avatar/Icon */}
           <div className="flex-shrink-0 mt-1">
             {isUser ? (
